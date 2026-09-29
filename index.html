@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WZ Web Downloader</title>
+<style>
+:root{--bg:#05060a;--sf:#0b0d14;--sf2:#11141d;--line:#232a3d;--tx:#eef1f8;
+--mut:#98a2b8;--ac:#7c5cff;--ac2:#a78bfa;--ok:#2ecc71;--err:#ff6b6b}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.5 -apple-system,
+BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;
+background:radial-gradient(40% 30% at 20% 0%,rgba(124,92,255,.16),transparent 70%),
+radial-gradient(30% 26% at 85% 8%,rgba(167,139,250,.10),transparent 72%)}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px;position:relative}
+h1{font-size:22px;letter-spacing:-.02em;margin-bottom:2px}
+.sub{color:var(--mut);font-size:13px;margin-bottom:18px}
+.card{background:var(--sf);border:1px solid var(--line);border-radius:16px;
+padding:16px;margin-bottom:14px}
+input,select{width:100%;background:var(--sf2);border:1px solid var(--line);
+color:var(--tx);border-radius:10px;padding:11px 13px;font:inherit;outline:0}
+input:focus{border-color:var(--ac2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+background:var(--sf2);border:1px solid var(--line);color:var(--tx);
+border-radius:999px;padding:10px 18px;font:600 14px/1 inherit;cursor:pointer;
+transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px);border-color:var(--ac2)}
+.btn.pri{background:linear-gradient(135deg,var(--ac),var(--ac2));
+border:0;color:#fff;box-shadow:0 8px 24px -10px var(--ac)}
+.btn.dng{border-color:#5b2230;color:#ff9db0}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.bar{height:8px;background:var(--sf2);border-radius:99px;overflow:hidden;
+margin:8px 0 4px}
+.bar i{display:block;height:100%;border-radius:99px;
+background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .5s}
+.meta{display:flex;justify-content:space-between;color:var(--mut);
+font-size:12px}
+.task{border:1px solid var(--line);border-radius:14px;padding:13px 14px;
+margin-bottom:10px;background:var(--sf)}
+.tname{font-weight:600;font-size:14px;word-break:break-word}
+.pill{font:600 10px/1.4 inherit;padding:2px 9px;border-radius:99px;
+background:var(--sf2);border:1px solid var(--line);color:var(--mut)}
+.pill.ok{color:var(--ok);border-color:#1d4d33}.pill.err{color:var(--err);
+border-color:#5b2230}
+.fmt{display:flex;justify-content:space-between;align-items:center;
+padding:9px 12px;border:1px solid var(--line);border-radius:10px;
+margin-bottom:7px;cursor:pointer;background:var(--sf2)}
+.fmt:hover{border-color:var(--ac2)}.fmt.on{border-color:var(--ac);
+box-shadow:0 0 0 1px var(--ac) inset}
+.fmt .sz{color:var(--mut);font-size:12px;white-space:nowrap;margin-left:10px}
+#conn{display:none;background:#3b2412;border:1px solid #7c4a1c;color:#ffce9a;
+border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+.err{color:var(--err);font-size:13px;margin-top:8px;word-break:break-word}
+.mut{color:var(--mut);font-size:12px}
+a.dl{display:inline-flex;margin-top:8px}
+.gear{position:absolute;top:18px;right:16px;background:none;border:0;
+color:var(--mut);font-size:20px;cursor:pointer}
+.hide{display:none!important}
+.thumb{width:100%;border-radius:10px;margin-bottom:10px;max-height:220px;
+object-fit:contain}
+</style></head><body><div class="wrap">
+<button class="gear" id="gear" title="Settings">⚙</button>
+<h1>⬇️ Web Downloader</h1>
+<div class="sub">your bot's engine, straight to your device</div>
+<div id="conn">Backend unreachable — it sleeps at night (06:00–23:00 IST)
+and during restarts. Retrying automatically…</div>
+
+<div id="settings" class="card hide">
+<div class="mut" style="margin-bottom:6px">API base (your worker URL)</div>
+<input id="apiBase" placeholder="https://….workers.dev">
+<div class="row" style="margin-top:10px">
+<button class="btn" id="saveApi">Save</button></div></div>
+
+<div id="login" class="card">
+<div class="mut" style="margin-bottom:6px">Password</div>
+<input id="pw" type="password" placeholder="web downloader password">
+<div class="err" id="pwErr"></div>
+<div style="margin-top:12px"><button class="btn pri" id="go">Unlock</button></div>
+</div>
+
+<div id="main" class="hide">
+<div class="card">
+<input id="url" placeholder="Paste a link — YouTube, Instagram, or any direct URL">
+<div class="err" id="urlErr"></div>
+<div style="margin-top:12px"><button class="btn pri" id="fetch">Get formats</button></div>
+</div>
+<div id="pick" class="card hide">
+<img id="thumb" class="thumb hide" alt="">
+<div class="tname" id="metaTitle"></div>
+<div class="mut" id="metaSub"></div>
+<div id="fmts" style="margin-top:12px"></div>
+<div class="mut" style="margin-top:10px">Advanced: yt-dlp format string
+(leave as-is unless you know it)</div>
+<input id="custom" value="bv*+ba/b" style="margin-top:6px">
+<div class="row" style="margin-top:12px">
+<button class="btn pri" id="start">Download to device</button>
+<button class="btn" id="audio">Audio (mp3)</button>
+</div></div>
+<div id="tasks"></div>
+</div></div>
+<script>
+(function(){
+var T={api:'',tok:''},poll=null;
+function $(i){return document.getElementById(i)}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);
+localStorage.setItem(k,v)}catch(e){return null}}
+function api(p,o){o=o||{};o.headers=o.headers||{};
+if(T.tok)o.headers['Authorization']='Bearer '+T.tok;
+return fetch(T.api+p,o).then(function(r){
+if(r.status===401&&p.indexOf('/api/login')<0){T.tok='';
+ls('webdl_tok','');location.reload();throw new Error('session expired')}
+return r})}
+T.tok=ls('webdl_tok')||'';
+var sameOrigin=!location.hostname.endsWith('.github.io');
+T.api=sameOrigin?'':(ls('webdl_api')||'');
+if(!sameOrigin&&!T.api){$('settings').classList.add('open');
+$('settings').classList.remove('hide')}
+function view(){
+$('login').classList.toggle('hide',!!T.tok);
+$('main').classList.toggle('hide',!T.tok);
+$('settings').classList.toggle('hide',
+!$('settings').classList.contains('open'));
+if(T.tok)refresh()}
+$('gear').onclick=function(){
+var s=$('settings');s.classList.toggle('open');s.classList.toggle('hide');
+$('apiBase').value=T.api};
+$('saveApi').onclick=function(){
+var v=$('apiBase').value.trim();while(v.length&&v.charAt(v.length-1)==='/')v=v.slice(0,-1);if(v&&v.indexOf('http://')!==0&&v.indexOf('https://')!==0)v='https://'+v;
+T.api=v;ls('webdl_api',v);$('settings').classList.remove('open');
+$('settings').classList.add('hide');view()};
+$('go').onclick=login;$('pw').onkeydown=function(e){if(e.key==='Enter')login()};
+function login(){
+$('pwErr').textContent='';$('go').disabled=true;
+api('/webdl/api/login',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({pass:$('pw').value})}).then(function(r){return r.json()})
+.then(function(d){$('go').disabled=false;
+if(d.token){T.tok=d.token;ls('webdl_tok',d.token);view()}
+else{$('pwErr').textContent=d.error||'wrong password'}})
+.catch(function(e){$('go').disabled=false;
+$('pwErr').textContent='cannot reach the backend'})}
+var FMT=null;
+$('fetch').onclick=function(){
+var u=$('url').value.trim();$('urlErr').textContent='';
+if(!u){$('urlErr').textContent='paste a link first';return}
+$('fetch').disabled=true;$('fetch').textContent='Checking…';
+api('/webdl/api/formats',{method:'POST',
+headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u})})
+.then(function(r){return r.json()}).then(function(d){
+$('fetch').disabled=false;$('fetch').textContent='Get formats';
+if(!d.ok){$('urlErr').textContent=d.error||'could not read that link';return}
+FMT=d;$('pick').classList.remove('hide');
+if(d.thumbnail){$('thumb').src=d.thumbnail;$('thumb').classList.remove('hide')}
+$('metaTitle').textContent=d.title||u;
+$('metaSub').textContent=(d.extractor||'')+(d.duration?
+' · '+d.duration:'');
+var box=$('fmts');box.innerHTML='';
+var def=null;
+(d.formats||[]).forEach(function(f,i){
+var d1=document.createElement('div');d1.className='fmt';
+var lab=document.createElement('div');
+lab.textContent=f.label;
+var sz=document.createElement('span');sz.className='sz';
+sz.textContent=f.size||'';
+d1.appendChild(lab);d1.appendChild(sz);
+d1.onclick=function(){
+box.querySelectorAll('.fmt').forEach(function(x){x.classList.remove('on')});
+d1.classList.add('on');$('custom').value=f.fmt};
+if(!def&&f.best)def=d1;
+box.appendChild(d1)});
+if(def)def.click();
+}).catch(function(e){$('fetch').disabled=false;
+$('fetch').textContent='Get formats';
+$('urlErr').textContent='backend unreachable'})};
+$('audio').onclick=start.bind(null,true);
+$('start').onclick=start.bind(null,false);
+function start(audio){
+if(!FMT)return;
+var body={url:FMT.url||$('url').value.trim(),mode:audio?'audio':'video'};
+if(!audio)body.fmt=$('custom').value.trim()||'bv*+ba/b';
+api('/webdl/api/start',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify(body)}).then(function(r){return r.json()})
+.then(function(d){
+if(d.ok){$('pick').classList.add('hide');refresh()}
+else{$('urlErr').textContent=d.error||'could not start'}})
+.catch(function(){$('urlErr').textContent='backend unreachable'})}
+function esc(s){var d=document.createElement('div');d.textContent=s||'';
+return d.innerHTML}
+function refresh(){
+api('/webdl/api/state').then(function(r){return r.json()})
+.then(function(d){$('conn').style.display='none';
+if(!d.ok)return;
+var h='';
+(d.tasks||[]).forEach(function(t){
+var st=t.status,pc='';
+if(st==='downloading')pc='<div class="bar"><i style="width:'
++(t.pct||0)+'%"></i></div><div class="meta"><span>'+(t.pct||0)+'%'
++(t.speed?' · '+t.speed:'')+(t.eta?' · ETA '+t.eta:'')
++'</span><span>'+(t.size||'')+'</span></div>';
+var pill='<span class="pill">'+st+'</span>';
+if(st==='done')pill='<span class="pill ok">ready</span>';
+if(st==='error')pill='<span class="pill err">failed</span>';
+h+='<div class="task"><div style="display:flex;justify-content:'
++'space-between;gap:8px"><div class="tname">'+esc(t.title)
++'</div>'+pill+'</div>'+pc;
+if(t.error)h+='<div class="err">'+esc(t.error)+'</div>';
+if(st==='done')h+='<a class="dl btn pri" href="'+T.api+'/webdl/dl/'
++encodeURIComponent(t.id)+'?auth='+encodeURIComponent(T.tok)
++'" download>⬇ Save to device</a>';
+if(st==='downloading'||st==='queued'||st==='processing')
+h+='<div style="margin-top:8px"><button class="btn dng" data-cancel="'
++esc(t.id)+'">Cancel</button></div>';
+h+='</div>';
+});
+$('tasks').innerHTML=h;
+$('tasks').querySelectorAll('[data-cancel]').forEach(function(b){
+b.onclick=function(){api('/webdl/api/cancel',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({id:b.getAttribute('data-cancel')})})
+.then(refresh).catch(function(){})}});
+}).catch(function(){$('conn').style.display='block'});
+if(poll)clearTimeout(poll);poll=setTimeout(refresh,2500)}
+view();
+})();
+</script></body></html>
