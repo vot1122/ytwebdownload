@@ -121,6 +121,7 @@ and during restarts. Retrying automatically…</div>
 </div>
 <div style="margin-top:10px"><button class="btn pri" id="gSave">Save globals</button>
 <span class="mut" id="gMsg"></span></div>
+<div class="mut" id="ckInfo" style="margin-top:8px"></div>
 <div style="border:0;border-top:1px solid var(--line);margin:14px 0"></div>
 <div class="tname">Users</div>
 <div id="users" style="margin-top:8px"></div>
@@ -131,7 +132,7 @@ and during restarts. Retrying automatically…</div>
 </div></div>
 <script>
 (function(){
-var T={api:'',tok:'',role:''},poll=null,admPoll=null;
+var DEFAULT_API=atob('aHR0cHM6Ly90d2lsaWdodC10aHVuZGVyLTRkNDguam9zaGlmcmVlZmlyZS1qb3NoaS53b3JrZXJzLmRldg==');var T={api:(ls('webdl_api')||(location.protocol==='https:'&&location.hostname.indexOf('workers.dev')>=0?'':DEFAULT_API)),tok:'',role:''},poll=null,admPoll=null;
 function $(i){return document.getElementById(i)}
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);
 localStorage.setItem(k,v)}catch(e){return null}}
@@ -148,12 +149,14 @@ T.api=sameOrigin?'':(ls('webdl_api')||'');
 if(!sameOrigin&&!T.api){$('settings').classList.add('open');
 $('settings').classList.remove('hide')}
 function view(){
+$('gear').style.display=(T.role==='o')?'':'none';
 $('login').classList.toggle('hide',!!T.tok);
 $('main').classList.toggle('hide',!T.tok);
 $('settings').classList.toggle('hide',
 !$('settings').classList.contains('open'));
 if(T.tok)refresh()}
 $('gear').onclick=function(){
+if(T.role!=='o')return;
 var s=$('settings');s.classList.toggle('open');s.classList.toggle('hide');
 $('apiBase').value=T.api};
 $('saveApi').onclick=function(){
@@ -212,6 +215,16 @@ $('metaSub').textContent=(d.extractor||'')+(d.duration?
 ' · '+d.duration:'');
 var box=$('fmts');box.innerHTML='';
 var def=null;
+if((d.formats||[]).some(function(i){return i.vid})){
+var bb=document.createElement('div');bb.className='fmt';
+var bl=document.createElement('div');
+bl.textContent='Best available (recommended)';
+var bs=document.createElement('span');bs.className='sz';bs.textContent='';
+bb.appendChild(bl);bb.appendChild(bs);
+bb.onclick=function(){box.querySelectorAll('.fmt').forEach(
+function(x){x.classList.remove('on')});bb.classList.add('on');
+$('custom').value=''};
+box.appendChild(bb);def=bb;}
 (d.formats||[]).forEach(function(i){
 var d1=document.createElement('div');d1.className='fmt';
 var lab=document.createElement('div');
@@ -274,11 +287,11 @@ h+='<div class="task"><div style="display:flex;justify-content:'
 if(t.error)h+='<div class="err">'+esc(t.error)+'</div>';
 if(st==='done'&&t.tg_ok&&d.tg_allowed){
 if(t.tg==='sending')h+='<button class="btn" disabled>sending…</button>';
-else if(t.tg==='sent')h+='<button class="btn" disabled>\u2708 sent \u2713</button>';
-else h+='<button class="btn pri" data-tg="'+esc(t.id)+'">\u2708 Send to Telegram</button>';}
+else if(t.tg==='sent')h+='<button class="btn" disabled>&#9980 sent ✓</button>';
+else h+='<button class="btn pri" data-tg="'+esc(t.id)+'">&#9980 Send to Telegram</button>';}
 if(st==='done')h+='<a class="dl btn pri" href="'+T.api+'/webdl/dl/'
 +encodeURIComponent(t.id)+'?auth='+encodeURIComponent(T.tok)
-+'" download>\u2b07 Save to device</a>';
++'" download>⬇ Save to device</a>';
 if(st==='downloading'||st==='queued'||st==='processing')
 h+='<div style="margin-top:8px"><button class="btn dng" data-cancel="'
 +esc(t.id)+'">Cancel</button></div>';
@@ -304,6 +317,9 @@ api('/webdl/api/admin/state').then(function(r){return r.json()})
 if(!d.ok)return;
 var g=d.globals||{};
 $('gUserMax').value=g.user_max_gb;$('gUserDaily').value=g.user_daily;
+$('ckInfo').textContent=d.yt_cookies?
+'YouTube cookies: set (sent via /ws)':
+'YouTube cookies: none — age/login-locked videos will fail. Send cookies.txt via /ws';
 $('gTtl').value=g.ttl;$('gMax').value=g.max_gb;$('gConc').value=g.conc;
 var h='';
 (d.users||[]).forEach(function(u){
@@ -317,7 +333,7 @@ h+='<div class="urow"><span class="dev">'+esc(u.dev.slice(0,14))+
 '" data-banned="'+(u.banned?1:0)+'">'+(u.banned?'unban':'ban')+
 '</button></div>'});
 $('users').innerHTML=h||'<div class="mut">no guests yet</div>';
-var ih='<div class="hd" style="margin-top:10px">Networks today (shared-IP daily cap = 2x guest limit)</div>';
+var ih='<div class="hd">Networks today (shared-IP daily cap = 2x guest limit)</div>';
 (d.ips||[]).forEach(function(p){
 ih+='<div class="urow"><span class="dev">'+esc(p.ip)+
 '</span><span class="mut">'+p.n+' downloads today</span></div>'});
@@ -352,12 +368,12 @@ ttl:parseFloat($('gTtl').value)||0,
 max_gb:parseFloat($('gMax').value)||0,
 conc:parseInt($('gConc').value)||0})})
 .then(function(r){return r.json()}).then(function(d){
-$('gMsg').textContent=d.ok?'saved \u2713':'failed';
+$('gMsg').textContent=d.ok?'saved ✓':'failed';
 setTimeout(function(){$('gMsg').textContent=''},3000);admin()})
 .catch(function(){$('gMsg').textContent='failed'})};
 (function ownerBtn(){
 var b=document.createElement('button');
-b.className='btn hide';b.id='ownerBtn';b.textContent='\u2699 Owner panel';
+b.className='btn hide';b.id='ownerBtn';b.textContent='⚙ Owner panel';
 b.style.marginBottom='12px';
 b.onclick=function(){var w=$('admWrap');w.classList.toggle('hide');
 if(!w.classList.contains('hide'))admin()};
