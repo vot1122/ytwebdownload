@@ -233,7 +233,10 @@ Running on the bot's own engine · files auto-delete after a few hours<br>
 <div class="mut" id="ckInfo" style="margin-top:8px"></div>
 </div>
 <div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center">
 <div class="tname">Accounts</div>
+<button class="btn dng sm" id="unbanAll">Unban ALL banned</button>
+</div>
 <div id="accounts" style="margin-top:8px"></div>
 </div>
 <div class="card">
@@ -499,6 +502,7 @@ ah+=' <div class="urow"><b>'+esc(u.name)+'</b>'
 +' <button class="btn sm" data-aban="'+esc(u.name)+'" data-v="'+(u.banned?0:1)+'">'
 +(u.banned?'unban':'ban')+'</button>'
 +' <button class="btn sm" data-ares="'+esc(u.name)+'">reset device</button>'
++' <button class="btn sm dng" data-adel="'+esc(u.name)+'">remove</button>'
 +' </div>'});
 $('accounts').innerHTML=ah||'<div class="mut">no accounts yet — create them via /ws</div>';
 $('accounts').querySelectorAll('[data-aban]').forEach(function(b){
@@ -510,6 +514,11 @@ $('accounts').querySelectorAll('[data-ares]').forEach(function(b){
 b.onclick=function(){api('/webdl/api/admin/user',{method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({user:b.getAttribute('data-ares'),reset_dev:1})}).then(admin)}});
+$('accounts').querySelectorAll('[data-adel]').forEach(function(b){
+b.onclick=function(){if(!confirm('remove '+b.getAttribute('data-adel')+'?'))return;
+api('/webdl/api/admin/user',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({user:b.getAttribute('data-adel'),del:1})}).then(admin)}});
 var h='';
 (d.users||[]).forEach(function(u){
 h+=' '+esc(u.dev.slice(0,14))+'… '+esc(u.ip||'—')+' '
@@ -528,6 +537,14 @@ body:JSON.stringify({dev:b.getAttribute('data-ban'),
 banned:b.getAttribute('data-banned')!=='1'})}).then(admin)}});
 $('acts').textContent=(d.events||[]).join('\n')||'nothing yet';
 }).catch(function(){})}
+$('unbanAll').onclick=function(){
+$('unbanAll').disabled=true;
+api('/webdl/api/admin/unban_all',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({})}).then(function(r){return r.json()})
+.then(function(d){$('unbanAll').disabled=false;
+alert(d.ok?('unbanned '+(d.count||0)+' users'):'failed');admin()})
+.catch(function(){$('unbanAll').disabled=false})};
 $('gSave').onclick=function(){
 $('gMsg').textContent='';
 api('/webdl/api/admin/globals',{method:'POST',
