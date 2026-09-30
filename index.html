@@ -206,7 +206,7 @@ api('/webdl/api/formats',{method:'POST',
 headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u})})
 .then(function(r){return r.json()}).then(function(d){
 $('fetch').disabled=false;$('fetch').textContent='Get formats';
-if(!d.ok){$('urlErr').textContent=d.error||'could not read that link';return}
+if(!d.ok){$('urlErr').textContent=(d.why?d.why+' — ':'')+(d.error||'could not read that link');return}
 FMT=d;$('pick').classList.remove('hide');
 if(d.thumbnail){$('thumb').src=d.thumbnail;$('thumb').classList.remove('hide')}
 $('metaTitle').textContent=d.title||u;
@@ -283,7 +283,7 @@ if(st==='error')pill='<span class="pill err">failed</span>';
 h+='<div class="task"><div style="display:flex;justify-content:'
 +'space-between;gap:8px"><div class="tname">'+esc(t.title)
 +'</div>'+pill+'</div>'+pc;
-if(t.error)h+='<div class="err">'+esc(t.error)+'</div>';
+if(t.error)h+='<div class="err">'+(t.why?'<div class="mut" style="margin-bottom:3px">'+esc(t.why)+'</div>':'')+esc(t.error)+'</div>';
 if(st==='done'&&t.tg_ok&&d.tg_allowed){
 if(t.tg==='sending')h+='<button class="btn" disabled>sending…</button>';
 else if(t.tg==='sent')h+='<button class="btn" disabled>&#9980 sent ✓</button>';
