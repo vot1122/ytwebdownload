@@ -132,7 +132,7 @@ and during restarts. Retrying automatically…</div>
 </div></div>
 <script>
 (function(){
-var DEFAULT_API=atob('aHR0cHM6Ly90d2lsaWdodC10aHVuZGVyLTRkNDguam9zaGlmcmVlZmlyZS1qb3NoaS53b3JrZXJzLmRldg==');var T={api:(ls('webdl_api')||(location.protocol==='https:'&&location.hostname.indexOf('workers.dev')>=0?'':DEFAULT_API)),tok:'',role:''},poll=null,admPoll=null;
+var T={api:'',tok:'',role:''},poll=null,admPoll=null;
 function $(i){return document.getElementById(i)}
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);
 localStorage.setItem(k,v)}catch(e){return null}}
@@ -146,8 +146,7 @@ return r})}
 T.tok=ls('webdl_tok')||'';T.role=ls('webdl_role')||'';
 var sameOrigin=!location.hostname.endsWith('.github.io');
 T.api=sameOrigin?'':(ls('webdl_api')||'');
-if(!sameOrigin&&!T.api){$('settings').classList.add('open');
-$('settings').classList.remove('hide')}
+if(!sameOrigin){fetch('backend.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.api&&d.api.indexOf('https://')===0){T.api=d.api;ls('webdl_api',T.api);view()}}).catch(function(){})}
 function view(){
 $('gear').style.display=(T.role==='o')?'':'none';
 $('login').classList.toggle('hide',!!T.tok);
