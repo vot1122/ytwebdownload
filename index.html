@@ -447,6 +447,9 @@ h+='<div class="task"><div style="display:flex;justify-content:'
 +'space-between;gap:8px"><div class="tname">'+esc(t.title)
 +'</div>'+pill+'</div>'+pc;
 if(t.error)h+='<div class="err">'+(t.why?'<div class="mut" style="margin-bottom:3px">'+esc(t.why)+'</div>':'')+esc(t.error)+'</div>';
+if(st==='done'&&t.mf)h+='<div style="margin-top:8px"><a class="btn pri" href="'+esc(t.mf)+'" target="_blank" rel="noopener" style="text-decoration:none;width:100%">☁ Get from MediaFire</a><div class="mut" style="margin-top:4px">big file — hosted on MediaFire</div></div>';
+if(st==='done'&&t.mf_status==='uploading')h+='<div class="mut" style="margin-top:8px">uploading to MediaFire — the link appears here soon</div>';
+if(st==='done'&&t.mf_status==='error')h+='<div class="mut" style="margin-top:8px">MediaFire upload failed ('+esc(t.mf_err||'?')+') — use Save to device</div>';
 if(st==='done'&&t.tg_ok&&d.tg_allowed){
 if(t.tg==='sending')h+='<button class="btn" disabled>sending…</button>';
 else if(t.tg==='sent')h+='<button class="btn" disabled>&#9980 sent ✓</button>';
