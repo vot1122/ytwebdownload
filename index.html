@@ -161,11 +161,25 @@ var v=$('apiBase').value.trim();while(v.length&&v.charAt(v.length-1)==='/')v=v.s
 T.api=v;ls('webdl_api',v);$('settings').classList.remove('open');
 $('settings').classList.add('hide');view()};
 $('go').onclick=login;$('pw').onkeydown=function(e){if(e.key==='Enter')login()};
+function fp(){
+try{
+var c=document.createElement('canvas');var x=c.getContext('2d');
+x.textBaseline='top';x.font='14px Arial';x.fillStyle='#f60';
+x.fillRect(0,0,120,30);x.fillStyle='#069';x.fillText('wzfix-fp',2,15);
+var d=c.toDataURL();
+var s=[d.length,screen.width+'x'+screen.height,screen.colorDepth,
+navigator.language,(navigator.languages||[]).join(','),
+navigator.hardwareConcurrency||0,
+(Intl.DateTimeFormat().resolvedOptions().timeZone||''),
+(navigator.platform||'')].join('|');
+var h=0;for(var i=0;i<s.length;i++){h=((h*31)+s.charCodeAt(i))>>>0;}
+return 'f'+h.toString(16);
+}catch(e){return ''}}
 $('guest').onclick=function(){
 $('pwErr').textContent='';$('guest').disabled=true;
 api('/webdl/api/login',{method:'POST',
 headers:{'Content-Type':'application/json'},
-body:JSON.stringify({guest:1,dev:dev()})}).then(function(r){return r.json()})
+body:JSON.stringify({guest:1,dev:dev(),fp:fp()})}).then(function(r){return r.json()})
 .then(function(d){$('guest').disabled=false;
 if(d.token){T.tok=d.token;T.role=d.role;ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
 else{$('pwErr').textContent=d.error||'could not start guest session'}})
@@ -294,7 +308,8 @@ $('gTtl').value=g.ttl;$('gMax').value=g.max_gb;$('gConc').value=g.conc;
 var h='';
 (d.users||[]).forEach(function(u){
 h+='<div class="urow"><span class="dev">'+esc(u.dev.slice(0,14))+
-'…</span><span class="mut">'+u.n+'/day</span>'+
+'…</span><span class="mut">'+esc(u.ip||'—')+'</span>'+
+'<span class="mut">'+u.n+'/day</span>'+
 '<input type="number" step="0.1" placeholder="'+(u.limit_gb||'def')+
 '" data-lim="'+esc(u.dev)+'" title="per-user cap (GB)">'+
 '<button class="btn sm" data-setlim="'+esc(u.dev)+'">set</button>'+
@@ -302,6 +317,11 @@ h+='<div class="urow"><span class="dev">'+esc(u.dev.slice(0,14))+
 '" data-banned="'+(u.banned?1:0)+'">'+(u.banned?'unban':'ban')+
 '</button></div>'});
 $('users').innerHTML=h||'<div class="mut">no guests yet</div>';
+var ih='<div class="hd" style="margin-top:10px">Networks today (shared-IP daily cap = 2x guest limit)</div>';
+(d.ips||[]).forEach(function(p){
+ih+='<div class="urow"><span class="dev">'+esc(p.ip)+
+'</span><span class="mut">'+p.n+' downloads today</span></div>'});
+$('users').innerHTML+=(ih||'');
 $('users').querySelectorAll('[data-ban]').forEach(function(b){
 b.onclick=function(){api('/webdl/api/admin/user',{method:'POST',
 headers:{'Content-Type':'application/json'},
