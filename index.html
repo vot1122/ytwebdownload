@@ -66,30 +66,112 @@ background:var(--sf2);font-size:13px;flex-wrap:wrap}
 .urow .dev{font-family:monospace;flex:1;min-width:110px}
 .urow input{width:70px;padding:5px 8px;border-radius:8px}
 .divi{text-align:center;color:var(--mut);font-size:12px;margin:12px 0 4px}
+.hero{ text-align:center;padding:26px 0 8px}
+.hero h1{font-size:28px;margin-bottom:6px}
+.hero .tag{color:var(--mut);font-size:14px}
+.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;
+margin:18px 0 6px}
+.stat{background:var(--sf);border:1px solid var(--line);border-radius:14px;
+padding:10px 18px;text-align:center;min-width:96px}
+.stat b{display:block;font-size:18px}
+.stat span{color:var(--mut);font-size:11px}
+.likebar{display:flex;justify-content:center;margin:10px 0 16px}
+.likebtn{background:var(--sf2);border:1px solid var(--line);color:var(--tx);
+border-radius:999px;padding:9px 20px;font:600 14px/1 inherit;cursor:pointer;
+display:inline-flex;align-items:center;gap:8px}
+.likebtn.on{border-color:#5b2230;color:#ff9db0;background:#1b0e15}
+.likebtn:disabled{opacity:.6;cursor:default}
+.tier{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--line);
+border-radius:10px;margin-bottom:8px;background:var(--sf2);font-size:13px;
+align-items:center}
+.tier .ic{font-size:18px}
+.tier b{font-size:13px}
+.tier .mut{font-size:12px}
+.footer{text-align:center;color:var(--mut);font-size:11px;margin-top:26px;
+line-height:1.8}
+.footer a{color:var(--ac2);text-decoration:none}
+.sechead{font:600 13px/1 inherit;letter-spacing:.06em;color:var(--mut);
+text-transform:uppercase;margin:22px 0 8px}
 </style></head><body><div class="wrap">
 <button class="gear" id="gear" title="Settings">⚙</button>
-<h1>⬇️ Web Downloader</h1>
-<div class="sub" id="subline">your bot's engine, straight to your device</div>
+
+<!-- ============ landing ============ -->
+<div id="landing">
+<div class="hero">
+<h1 id="siteName">WZ Web Downloader</h1>
+<div class="tag" id="siteTag">your bot's engine, straight to your device</div>
+</div>
+<div class="stats">
+<div class="stat"><b id="stUsers">–</b><span>members</span></div>
+<div class="stat"><b id="stDls">–</b><span>downloads</span></div>
+<div class="stat"><b id="stLikes">–</b><span>likes</span></div>
+</div>
+<div class="likebar">
+<button class="likebtn" id="likeBtn">❤ Like this service</button>
+</div>
 <div id="conn">Backend unreachable — it sleeps at night (06:00–23:00 IST)
 and during restarts. Retrying automatically…</div>
 
-<div id="settings" class="card hide">
-<div class="mut" style="margin-bottom:6px">API base (your worker URL)</div>
-<input id="apiBase" placeholder="https://….workers.dev">
-<div class="row" style="margin-top:10px">
-<button class="btn" id="saveApi">Save</button></div></div>
-
+<div class="sechead">Sign in</div>
 <div id="login" class="card">
-<div class="mut" style="margin-bottom:6px">Owner password</div>
-<input id="pw" type="password" placeholder="owner password (optional for guests)">
+<div class="mut" style="margin-bottom:6px">Username</div>
+<input id="user" placeholder="your username" autocomplete="username">
+<div class="mut" style="margin:8px 0 6px">Password</div>
+<input id="pw" type="password" placeholder="your password"
+autocomplete="current-password">
 <div class="err" id="pwErr"></div>
-<div style="margin-top:12px"><button class="btn pri" id="go">Unlock as owner</button></div>
+<div style="margin-top:12px"><button class="btn pri" id="go"
+style="width:100%">Sign in</button></div>
+<div class="divi">— or —</div>
+<button class="btn" id="inviteToggle" style="width:100%">I have an invite
+code</button>
+<div id="inviteBox" class="hide" style="margin-top:10px">
+<input id="inviteCode" placeholder="invite code" style="margin-bottom:8px">
+<div class="mut" style="margin-bottom:6px">Pick a username + password for
+your special account</div>
+<button class="btn pri" id="inviteGo" style="width:100%">Create account
+with invite</button>
+</div>
+<div id="guestRow" class="hide">
 <div class="divi">— or —</div>
 <button class="btn" id="guest" style="width:100%">Continue as guest</button>
-<div class="mut" style="margin-top:8px">guests: limited file size & a few downloads per day</div>
+<div class="mut" style="margin-top:8px">guests: limited file size & a
+few downloads per day</div>
+</div>
+<div class="mut" style="margin-top:12px">Owner? leave the username empty
+and enter the owner password.</div>
 </div>
 
+<div class="sechead">Get more limits</div>
+<div class="card" id="limitsCard">
+<div class="tier"><div class="ic">👤</div><div>
+<b>Members</b><div class="mut">account holders — bigger files and more
+downloads per day than guests</div></div></div>
+<div class="tier"><div class="ic">⭐</div><div>
+<b>Special members</b><div class="mut">invite-code accounts — the highest
+limits</div></div></div>
+<div class="tier"><div class="ic">🔓</div><div>
+<b>No limits at all</b><div class="mut">ask the owner about special
+arrangements</div></div></div>
+<div id="contactBox" class="hide" style="margin-top:12px">
+<a class="btn pri" id="contactBtn" target="_blank" rel="noopener"
+style="width:100%;text-decoration:none">Contact the owner</a>
+<div class="mut" style="margin-top:8px;text-align:center">on Telegram —
+for an account, more limits or help</div>
+</div>
+<div id="noContact" class="mut" style="text-align:center">To get an
+account or raise your limits, contact the owner.</div>
+</div>
+
+<div class="footer">
+Running on the bot's own engine · files auto-delete after a few hours<br>
+<a id="footVer" href="#"></a>
+</div>
+</div>
+
+<!-- ============ app ============ -->
 <div id="main" class="hide">
+<div class="sub" id="subline">signed in</div>
 <div class="card">
 <input id="url" placeholder="Paste a link — YouTube, Instagram, or any direct URL">
 <div class="err" id="urlErr"></div>
@@ -103,36 +185,71 @@ and during restarts. Retrying automatically…</div>
 <div class="mut" style="margin-top:10px">Advanced: yt-dlp format string
 (leave as-is unless you know it)</div>
 <input id="custom" value="bv*+ba/b" style="margin-top:6px">
-<div class="row" style="margin-top:12px">
+<div style="margin-top:12px;display:flex;gap:10px">
 <button class="btn pri" id="start">Download to device</button>
 <button class="btn" id="audio">Audio (mp3)</button>
-</div></div>
+</div>
+</div>
 <div id="tasks"></div>
-<div id="admWrap" class="card hide">
+<div style="text-align:center;margin-top:18px">
+<button class="btn sm" id="signout">Sign out</button>
+</div>
+
+<!-- ============ owner panel ============ -->
+<div id="admin" class="hide">
+<div class="card">
 <div class="tname">⚙ Owner panel</div>
 <div class="row" style="margin-top:10px">
-<div><div class="mut">guest file cap (GB)</div><input id="gUserMax" type="number" step="0.1"></div>
-<div><div class="mut">guest downloads/day</div><input id="gUserDaily" type="number"></div>
+<div><div class="mut">member file cap (GB)</div>
+<input id="gVMax"></div>
+<div><div class="mut">member downloads/day</div>
+<input id="gVDaily"></div>
 </div>
 <div class="row" style="margin-top:8px">
-<div><div class="mut">file TTL (h)</div><input id="gTtl" type="number"></div>
-<div><div class="mut">disk max (GB)</div><input id="gMax" type="number" step="0.1"></div>
-<div><div class="mut">parallel slots</div><input id="gConc" type="number"></div>
+<div><div class="mut">special file cap (GB)</div>
+<input id="gSMax"></div>
+<div><div class="mut">special downloads/day</div>
+<input id="gSDaily"></div>
 </div>
-<div style="margin-top:10px"><button class="btn pri" id="gSave">Save globals</button>
-<span class="mut" id="gMsg"></span></div>
+<div class="row" style="margin-top:8px">
+<div><div class="mut">guest file cap (GB)</div>
+<input id="gUserMax"></div>
+<div><div class="mut">guest downloads/day</div>
+<input id="gUserDaily"></div>
+</div>
+<div class="row" style="margin-top:8px">
+<div><div class="mut">file TTL (h)</div><input id="gTtl"></div>
+<div><div class="mut">disk max (GB)</div><input id="gMax"></div>
+<div><div class="mut">parallel slots</div><input id="gConc"></div>
+</div>
+<div class="row" style="margin-top:8px">
+<div><div class="mut">global bandwidth MB/day</div>
+<input id="gBwG"></div>
+<div><div class="mut">user bandwidth MB/day</div>
+<input id="gBwU"></div>
+</div>
+<div style="margin-top:10px"><button class="btn" id="gSave">Save globals</button>
+<span class="mut" id="gMsg" style="margin-left:10px"></span></div>
 <div class="mut" id="ckInfo" style="margin-top:8px"></div>
-<div style="border:0;border-top:1px solid var(--line);margin:14px 0"></div>
-<div class="tname">Users</div>
+</div>
+<div class="card">
+<div class="tname">Accounts</div>
+<div id="accounts" style="margin-top:8px"></div>
+</div>
+<div class="card">
+<div class="tname">Guest devices</div>
 <div id="users" style="margin-top:8px"></div>
-<div style="border:0;border-top:1px solid var(--line);margin:14px 0"></div>
+</div>
+<div class="card">
 <div class="tname">Activity</div>
 <div id="acts" class="mut" style="font-size:12px;line-height:1.7;max-height:220px;overflow:auto"></div>
 </div>
-</div></div>
+</div>
+</div>
+
 <script>
 (function(){
-var T={api:'',tok:'',role:''},poll=null,admPoll=null;
+var T={api:'',tok:'',role:'',user:''},poll=null,admPoll=null,liked=false;
 function $(i){return document.getElementById(i)}
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);
 localStorage.setItem(k,v)}catch(e){return null}}
@@ -149,54 +266,107 @@ T.api=sameOrigin?'':(ls('webdl_api')||'');
 if(!sameOrigin){fetch('backend.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.api&&d.api.indexOf('https://')===0){T.api=d.api;ls('webdl_api',T.api);view()}}).catch(function(){})}
 function view(){
 $('gear').style.display=(T.role==='o')?'':'none';
-$('login').classList.toggle('hide',!!T.tok);
-$('main').classList.toggle('hide',!T.tok);
-$('settings').classList.toggle('hide',
-!$('settings').classList.contains('open'));
-if(T.tok)refresh()}
-$('gear').onclick=function(){
-if(T.role!=='o')return;
-var s=$('settings');s.classList.toggle('open');s.classList.toggle('hide');
-$('apiBase').value=T.api};
-$('saveApi').onclick=function(){
-var v=$('apiBase').value.trim();while(v.length&&v.charAt(v.length-1)==='/')v=v.slice(0,-1);if(v&&v.indexOf('http://')!==0&&v.indexOf('https://')!==0)v='https://'+v;
-T.api=v;ls('webdl_api',v);$('settings').classList.remove('open');
-$('settings').classList.add('hide');view()};
-$('go').onclick=login;$('pw').onkeydown=function(e){if(e.key==='Enter')login()};
-function fp(){
-try{
+var signed=!!T.tok;
+$('landing').classList.toggle('hide',signed);
+$('main').classList.toggle('hide',!signed);
+if(!signed){loadMeta()}
+else{refresh();if(T.role==='o'){admin()}}
+}
+function fp(){try{
 var c=document.createElement('canvas');var x=c.getContext('2d');
 x.textBaseline='top';x.font='14px Arial';x.fillStyle='#f60';
 x.fillRect(0,0,120,30);x.fillStyle='#069';x.fillText('wzfix-fp',2,15);
 var d=c.toDataURL();
 var s=[d.length,screen.width+'x'+screen.height,screen.colorDepth,
-navigator.language,(navigator.languages||[]).join(','),
-navigator.hardwareConcurrency||0,
-(Intl.DateTimeFormat().resolvedOptions().timeZone||''),
-(navigator.platform||'')].join('|');
+navigator.language,(navigator.languages||[]).join(','),navigator.hardwareConcurrency||0,
+(Intl.DateTimeFormat().resolvedOptions().timeZone||''),(navigator.platform||'')].join('|');
 var h=0;for(var i=0;i<s.length;i++){h=((h*31)+s.charCodeAt(i))>>>0;}
 return 'f'+h.toString(16);
 }catch(e){return ''}}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return'&#'+c.charCodeAt(0)+';'})}
+function loadMeta(){
+api('/webdl/api/meta').then(function(r){return r.json()}).then(function(d){
+if(!d||!d.ok){setTimeout(loadMeta,15000);return}
+$('conn').style.display='none';
+$('siteName').textContent=d.name||'WZ Web Downloader';
+document.title=(d.name||'WZ Web Downloader');
+$('stUsers').textContent=d.users>0?d.users:'–';
+$('stDls').textContent=d.downloads>0?d.downloads:'–';
+$('stLikes').textContent=d.likes>0?d.likes:'–';
+$('footVer').textContent='engine '+(d.version||'');
+$('guestRow').classList.toggle('hide',!d.guests);
+if(d.contact){
+$('contactBox').classList.remove('hide');
+$('noContact').classList.add('hide');
+$('contactBtn').href='https://t.me/'+encodeURIComponent(d.contact);
+}
+if(d.liked){liked=true;likeUI()}
+}).catch(function(){setTimeout(loadMeta,15000)})
+}
+function likeUI(){
+$('likeBtn').textContent='❤ Liked';
+$('likeBtn').classList.add('on');
+$('likeBtn').disabled=true;
+}
+$('likeBtn').onclick=function(){
+if(liked)return;
+$('likeBtn').disabled=true;
+api('/webdl/api/like',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({dev:dev(),fp:fp()})}).then(function(r){return r.json()})
+.then(function(d){
+if(d&&d.ok){liked=true;likeUI();
+$('stLikes').textContent=(parseInt($('stLikes').textContent)||0)+1}
+else{$('likeBtn').disabled=false}
+}).catch(function(){$('likeBtn').disabled=false})
+};
+$('inviteToggle').onclick=function(){
+$('inviteBox').classList.toggle('hide')};
+$('go').onclick=login;
+$('pw').onkeydown=function(e){if(e.key==='Enter')login()};
+$('user').onkeydown=function(e){if(e.key==='Enter')login()};
+$('inviteGo').onclick=inviteLogin;
+function login(){
+$('pwErr').textContent='';$('go').disabled=true;
+var u=$('user').value.trim();
+var body;
+if(u){body={user:u,pass:$('pw').value,fp:fp(),dev:dev()}}
+else{body={pass:$('pw').value}}
+api('/webdl/api/login',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify(body)}).then(function(r){return r.json()})
+.then(function(d){$('go').disabled=false;
+if(d.token){T.tok=d.token;T.role=d.role;T.user=d.user||'';
+ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
+else{$('pwErr').textContent=(d.why?d.why+' — ':'')+(d.error||'could not sign in')}})
+.catch(function(){$('go').disabled=false;
+$('pwErr').textContent='cannot reach the backend'})}
+function inviteLogin(){
+$('pwErr').textContent='';$('inviteGo').disabled=true;
+api('/webdl/api/login',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({invite:$('inviteCode').value.trim(),
+user:$('user').value.trim(),pass:$('pw').value,fp:fp(),dev:dev()})})
+.then(function(r){return r.json()})
+.then(function(d){$('inviteGo').disabled=false;
+if(d.token){T.tok=d.token;T.role=d.role;T.user=d.user||'';
+ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
+else{$('pwErr').textContent=d.error||'invalid invite code'}})
+.catch(function(){$('inviteGo').disabled=false;
+$('pwErr').textContent='cannot reach the backend'})}
 $('guest').onclick=function(){
 $('pwErr').textContent='';$('guest').disabled=true;
 api('/webdl/api/login',{method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({guest:1,dev:dev(),fp:fp()})}).then(function(r){return r.json()})
 .then(function(d){$('guest').disabled=false;
-if(d.token){T.tok=d.token;T.role=d.role;ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
-else{$('pwErr').textContent=d.error||'could not start guest session'}})
+if(d.token){T.tok=d.token;T.role=d.role;T.user='';
+ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
+else{$('pwErr').textContent=(d.why?d.why+' — ':'')+(d.error||'could not start guest session')}})
 .catch(function(){$('guest').disabled=false;
 $('pwErr').textContent='cannot reach the backend'})};
-function login(){
-$('pwErr').textContent='';$('go').disabled=true;
-api('/webdl/api/login',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({pass:$('pw').value})}).then(function(r){return r.json()})
-.then(function(d){$('go').disabled=false;
-if(d.token){T.tok=d.token;T.role=d.role;ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
-else{$('pwErr').textContent=d.error||'wrong password'}})
-.catch(function(e){$('go').disabled=false;
-$('pwErr').textContent='cannot reach the backend'})}
+$('signout').onclick=function(){T.tok='';T.role='';T.user='';
+ls('webdl_tok','');ls('webdl_role','');location.reload()};
 var FMT=null;
 $('fetch').onclick=function(){
 var u=$('url').value.trim();$('urlErr').textContent='';
@@ -226,18 +396,15 @@ $('custom').value=''};
 box.appendChild(bb);def=bb;}
 (d.formats||[]).forEach(function(i){
 var d1=document.createElement('div');d1.className='fmt';
-var lab=document.createElement('div');
-lab.textContent=i.label;
+var lab=document.createElement('div');lab.textContent=i.label;
 var sz=document.createElement('span');sz.className='sz';
 sz.textContent=i.size||'';
 d1.appendChild(lab);d1.appendChild(sz);
-d1.onclick=function(){
-box.querySelectorAll('.fmt').forEach(function(x){x.classList.remove('on')});
-d1.classList.add('on');$('custom').value=i.fmt};
-if(!def&&i.best)def=d1;
+d1.onclick=function(){box.querySelectorAll('.fmt').forEach(function(x){
+x.classList.remove('on')});d1.classList.add('on');$('custom').value=i.fmt||''};
 box.appendChild(d1)});
 if(def)def.click();
-}).catch(function(e){$('fetch').disabled=false;
+}).catch(function(){$('fetch').disabled=false;
 $('fetch').textContent='Get formats';
 $('urlErr').textContent='backend unreachable'})};
 $('audio').onclick=start.bind(null,true);
@@ -253,23 +420,19 @@ body:JSON.stringify(body)}).then(function(r){return r.json()})
 if(d.ok){$('pick').classList.add('hide');refresh()}
 else{$('urlErr').textContent=d.error||'could not start'}})
 .catch(function(){$('urlErr').textContent='backend unreachable'})}
-function esc(s){var d=document.createElement('div');d.textContent=s||'';
-return d.innerHTML}
-function fmtT(t){var d=new Date((t.t||0)*1000);
-return d.toLocaleTimeString()}
 function refresh(){
 api('/webdl/api/state').then(function(r){return r.json()})
 .then(function(d){$('conn').style.display='none';
 if(!d.ok)return;
-T.role=d.role||T.role;
+T.role=d.role||T.role;T.user=d.user||T.user;
 if(d.role)ls('webdl_role',d.role);
 var sub=$('subline');
-var ob=$('ownerBtn');
-if(ob)ob.classList.toggle('hide',d.role!=='o');
-if(d.role==='o'){sub.textContent='owner mode — no limits'}
-else if(d.me){sub.textContent=d.me.banned?
-'guest · this device is banned':
-'guest · '+d.me.n+' of '+d.me.daily+' downloads used today'}
+if(d.role==='o')sub.textContent='owner mode — no limits';
+else if(d.user)sub.textContent='signed in as '+d.user+' · '+
+(d.me.n+' of '+d.me.daily+' downloads used today');
+else if(d.me)sub.textContent=(d.me.banned?
+'this device is banned':
+'guest · '+d.me.n+' of '+d.me.daily+' downloads used today');
 var h='';
 (d.tasks||[]).forEach(function(t){
 var st=t.status,pc='';
@@ -294,89 +457,93 @@ if(st==='done')h+='<a class="dl btn pri" href="'+T.api+'/webdl/dl/'
 if(st==='downloading'||st==='queued'||st==='processing')
 h+='<div style="margin-top:8px"><button class="btn dng" data-cancel="'
 +esc(t.id)+'">Cancel</button></div>';
-h+='</div>';
-});
-$('tasks').innerHTML=h;
+h+='</div>'});
+$('tasks').innerHTML=h||'<div class="mut" style="text-align:center;padding:10px">no downloads yet</div>';
 $('tasks').querySelectorAll('[data-tg]').forEach(function(b){
 b.onclick=function(){api('/webdl/api/tg',{method:'POST',
 headers:{'Content-Type':'application/json'},
-body:JSON.stringify({id:b.getAttribute('data-tg')})})
-.then(refresh).catch(function(){})}});
+body:JSON.stringify({id:b.getAttribute('data-tg')})}).then(refresh)}});
 $('tasks').querySelectorAll('[data-cancel]').forEach(function(b){
 b.onclick=function(){api('/webdl/api/cancel',{method:'POST',
 headers:{'Content-Type':'application/json'},
-body:JSON.stringify({id:b.getAttribute('data-cancel')})})
-.then(refresh).catch(function(){})}});
-}).catch(function(){$('conn').style.display='block'});
-if(poll)clearTimeout(poll);poll=setTimeout(refresh,2500)}
+body:JSON.stringify({id:b.getAttribute('data-cancel')})}).then(refresh)}});
+}).catch(function(){});
+}
+$('gear').onclick=function(){
+if(T.role!=='o')return;
+var s=$('admin');s.classList.toggle('hide')};
 function admin(){
 if(T.role!=='o')return;
 api('/webdl/api/admin/state').then(function(r){return r.json()})
 .then(function(d){
 if(!d.ok)return;
 var g=d.globals||{};
+$('gVMax').value=g.v_max_gb;$('gVDaily').value=g.v_daily;
+$('gSMax').value=g.s_max_gb;$('gSDaily').value=g.s_daily;
 $('gUserMax').value=g.user_max_gb;$('gUserDaily').value=g.user_daily;
+$('gTtl').value=g.ttl;$('gMax').value=g.max_gb;$('gConc').value=g.conc;
+$('gBwG').value=g.bw_global_mb;$('gBwU').value=g.bw_user_mb;
 $('ckInfo').textContent=d.yt_cookies?
 'YouTube cookies: set (sent via /ws)':
 'YouTube cookies: none — age/login-locked videos will fail. Send cookies.txt via /ws';
-$('gTtl').value=g.ttl;$('gMax').value=g.max_gb;$('gConc').value=g.conc;
+var ah='';
+(d.accounts||[]).forEach(function(u){
+ah+=' <div class="urow"><b>'+esc(u.name)+'</b>'
++' '+(u.role==='s'?'<span class="pill">special</span>':'<span class="pill">member</span>')
++' '+esc(u.n)+'/day · '+esc(u.bw)+' MB'
++(u.ip?' · '+esc(u.ip):'')
++(u.banned?' <span class="pill err">banned</span>':'')
++' <button class="btn sm" data-aban="'+esc(u.name)+'" data-v="'+(u.banned?0:1)+'">'
++(u.banned?'unban':'ban')+'</button>'
++' <button class="btn sm" data-ares="'+esc(u.name)+'">reset device</button>'
++' </div>'});
+$('accounts').innerHTML=ah||'<div class="mut">no accounts yet — create them via /ws</div>';
+$('accounts').querySelectorAll('[data-aban]').forEach(function(b){
+b.onclick=function(){api('/webdl/api/admin/user',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({user:b.getAttribute('data-aban'),
+banned:b.getAttribute('data-v')==='1'})}).then(admin)}});
+$('accounts').querySelectorAll('[data-ares]').forEach(function(b){
+b.onclick=function(){api('/webdl/api/admin/user',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({user:b.getAttribute('data-ares'),reset_dev:1})}).then(admin)}});
 var h='';
 (d.users||[]).forEach(function(u){
-h+='<div class="urow"><span class="dev">'+esc(u.dev.slice(0,14))+
-'…</span><span class="mut">'+esc(u.ip||'—')+'</span>'+
-'<span class="mut">'+u.n+'/day</span>'+
-'<input type="number" step="0.1" placeholder="'+(u.limit_gb||'def')+
-'" data-lim="'+esc(u.dev)+'" title="per-user cap (GB)">'+
-'<button class="btn sm" data-setlim="'+esc(u.dev)+'">set</button>'+
-'<button class="btn sm '+(u.banned?'':'dng')+'" data-ban="'+esc(u.dev)+
-'" data-banned="'+(u.banned?1:0)+'">'+(u.banned?'unban':'ban')+
-'</button></div>'});
-$('users').innerHTML=h||'<div class="mut">no guests yet</div>';
-var ih='<div class="hd">Networks today (shared-IP daily cap = 2x guest limit)</div>';
+h+=' '+esc(u.dev.slice(0,14))+'… '+esc(u.ip||'—')+' '
++' '+u.n+'/day '
++' set '
++' '+(u.banned?'unban':'ban')+' '});
+$('users').innerHTML=h||' no guests yet ';
+var ih=' Networks today ';
 (d.ips||[]).forEach(function(p){
-ih+='<div class="urow"><span class="dev">'+esc(p.ip)+
-'</span><span class="mut">'+p.n+' downloads today</span></div>'});
+ih+=' '+esc(p.ip)+' '+p.n+' today '});
 $('users').innerHTML+=(ih||'');
 $('users').querySelectorAll('[data-ban]').forEach(function(b){
 b.onclick=function(){api('/webdl/api/admin/user',{method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({dev:b.getAttribute('data-ban'),
 banned:b.getAttribute('data-banned')!=='1'})}).then(admin)}});
-$('users').querySelectorAll('[data-setlim]').forEach(function(b){
-b.onclick=function(){var inp=document.querySelector(
-'[data-lim="'+b.getAttribute('data-setlim')+'"]');
-api('/webdl/api/admin/user',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({dev:b.getAttribute('data-setlim'),
-limit_gb:parseFloat(inp.value)||0})}).then(admin)}});
-var a='';
-(d.events||[]).slice(-40).reverse().forEach(function(e){
-a+='<div>'+fmtT(e)+' — '+esc(e.m)+'</div>'});
-$('acts').innerHTML=a;
-}).catch(function(){});
-if(admPoll)clearTimeout(admPoll);admPoll=null;
-if(!$('admWrap').classList.contains('hide'))
-admPoll=setTimeout(admin,8000)}
+$('acts').textContent=(d.events||[]).join('\n')||'nothing yet';
+}).catch(function(){})}
 $('gSave').onclick=function(){
 $('gMsg').textContent='';
 api('/webdl/api/admin/globals',{method:'POST',
 headers:{'Content-Type':'application/json'},
-body:JSON.stringify({user_max_gb:parseFloat($('gUserMax').value)||0,
+body:JSON.stringify({v_max_gb:parseFloat($('gVMax').value)||0,
+v_daily:parseInt($('gVDaily').value)||0,
+s_max_gb:parseFloat($('gSMax').value)||0,
+s_daily:parseInt($('gSDaily').value)||0,
+user_max_gb:parseFloat($('gUserMax').value)||0,
 user_daily:parseInt($('gUserDaily').value)||0,
 ttl:parseFloat($('gTtl').value)||0,
 max_gb:parseFloat($('gMax').value)||0,
-conc:parseInt($('gConc').value)||0})})
+conc:parseInt($('gConc').value)||0,
+bw_global_mb:parseFloat($('gBwG').value)||0,
+bw_user_mb:parseFloat($('gBwU').value)||0})})
 .then(function(r){return r.json()}).then(function(d){
 $('gMsg').textContent=d.ok?'saved ✓':'failed';
 setTimeout(function(){$('gMsg').textContent=''},3000);admin()})
 .catch(function(){$('gMsg').textContent='failed'})};
-(function ownerBtn(){
-var b=document.createElement('button');
-b.className='btn hide';b.id='ownerBtn';b.textContent='⚙ Owner panel';
-b.style.marginBottom='12px';
-b.onclick=function(){var w=$('admWrap');w.classList.toggle('hide');
-if(!w.classList.contains('hide'))admin()};
-$('main').insertBefore(b,$('main').firstChild)})();
 view();
 })();
 </script></body></html>
