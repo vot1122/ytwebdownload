@@ -27,6 +27,7 @@ transition:transform .15s,box-shadow .15s}
 .btn.pri{background:linear-gradient(135deg,var(--ac),var(--ac2));
 border:0;color:#fff;box-shadow:0 8px 24px -10px var(--ac)}
 .btn.dng{border-color:#5b2230;color:#ff9db0}
+.btn.sm{padding:6px 12px;font-size:12px}
 .btn:disabled{opacity:.5;cursor:default;transform:none}
 .row{display:flex;gap:10px}
 .row>*{flex:1}
@@ -59,10 +60,16 @@ color:var(--mut);font-size:20px;cursor:pointer}
 .hide{display:none!important}
 .thumb{width:100%;border-radius:10px;margin-bottom:10px;max-height:220px;
 object-fit:contain}
+.urow{display:flex;align-items:center;gap:8px;padding:8px 10px;
+border:1px solid var(--line);border-radius:10px;margin-bottom:7px;
+background:var(--sf2);font-size:13px;flex-wrap:wrap}
+.urow .dev{font-family:monospace;flex:1;min-width:110px}
+.urow input{width:70px;padding:5px 8px;border-radius:8px}
+.divi{text-align:center;color:var(--mut);font-size:12px;margin:12px 0 4px}
 </style></head><body><div class="wrap">
 <button class="gear" id="gear" title="Settings">⚙</button>
 <h1>⬇️ Web Downloader</h1>
-<div class="sub">your bot's engine, straight to your device</div>
+<div class="sub" id="subline">your bot's engine, straight to your device</div>
 <div id="conn">Backend unreachable — it sleeps at night (06:00–23:00 IST)
 and during restarts. Retrying automatically…</div>
 
@@ -73,10 +80,13 @@ and during restarts. Retrying automatically…</div>
 <button class="btn" id="saveApi">Save</button></div></div>
 
 <div id="login" class="card">
-<div class="mut" style="margin-bottom:6px">Password</div>
-<input id="pw" type="password" placeholder="web downloader password">
+<div class="mut" style="margin-bottom:6px">Owner password</div>
+<input id="pw" type="password" placeholder="owner password (optional for guests)">
 <div class="err" id="pwErr"></div>
-<div style="margin-top:12px"><button class="btn pri" id="go">Unlock</button></div>
+<div style="margin-top:12px"><button class="btn pri" id="go">Unlock as owner</button></div>
+<div class="divi">— or —</div>
+<button class="btn" id="guest" style="width:100%">Continue as guest</button>
+<div class="mut" style="margin-top:8px">guests: limited file size & a few downloads per day</div>
 </div>
 
 <div id="main" class="hide">
@@ -98,20 +108,41 @@ and during restarts. Retrying automatically…</div>
 <button class="btn" id="audio">Audio (mp3)</button>
 </div></div>
 <div id="tasks"></div>
+<div id="admWrap" class="card hide">
+<div class="tname">⚙ Owner panel</div>
+<div class="row" style="margin-top:10px">
+<div><div class="mut">guest file cap (GB)</div><input id="gUserMax" type="number" step="0.1"></div>
+<div><div class="mut">guest downloads/day</div><input id="gUserDaily" type="number"></div>
+</div>
+<div class="row" style="margin-top:8px">
+<div><div class="mut">file TTL (h)</div><input id="gTtl" type="number"></div>
+<div><div class="mut">disk max (GB)</div><input id="gMax" type="number" step="0.1"></div>
+<div><div class="mut">parallel slots</div><input id="gConc" type="number"></div>
+</div>
+<div style="margin-top:10px"><button class="btn pri" id="gSave">Save globals</button>
+<span class="mut" id="gMsg"></span></div>
+<div style="border:0;border-top:1px solid var(--line);margin:14px 0"></div>
+<div class="tname">Users</div>
+<div id="users" style="margin-top:8px"></div>
+<div style="border:0;border-top:1px solid var(--line);margin:14px 0"></div>
+<div class="tname">Activity</div>
+<div id="acts" class="mut" style="font-size:12px;line-height:1.7;max-height:220px;overflow:auto"></div>
+</div>
 </div></div>
 <script>
 (function(){
-var T={api:'',tok:''},poll=null;
+var T={api:'',tok:'',role:''},poll=null,admPoll=null;
 function $(i){return document.getElementById(i)}
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);
 localStorage.setItem(k,v)}catch(e){return null}}
+function dev(){var d=ls('webdl_dev');if(!d){d='d'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);ls('webdl_dev',d)}return d}
 function api(p,o){o=o||{};o.headers=o.headers||{};
 if(T.tok)o.headers['Authorization']='Bearer '+T.tok;
 return fetch(T.api+p,o).then(function(r){
 if(r.status===401&&p.indexOf('/api/login')<0){T.tok='';
 ls('webdl_tok','');location.reload();throw new Error('session expired')}
 return r})}
-T.tok=ls('webdl_tok')||'';
+T.tok=ls('webdl_tok')||'';T.role=ls('webdl_role')||'';
 var sameOrigin=!location.hostname.endsWith('.github.io');
 T.api=sameOrigin?'':(ls('webdl_api')||'');
 if(!sameOrigin&&!T.api){$('settings').classList.add('open');
@@ -130,13 +161,23 @@ var v=$('apiBase').value.trim();while(v.length&&v.charAt(v.length-1)==='/')v=v.s
 T.api=v;ls('webdl_api',v);$('settings').classList.remove('open');
 $('settings').classList.add('hide');view()};
 $('go').onclick=login;$('pw').onkeydown=function(e){if(e.key==='Enter')login()};
+$('guest').onclick=function(){
+$('pwErr').textContent='';$('guest').disabled=true;
+api('/webdl/api/login',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({guest:1,dev:dev()})}).then(function(r){return r.json()})
+.then(function(d){$('guest').disabled=false;
+if(d.token){T.tok=d.token;T.role=d.role;ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
+else{$('pwErr').textContent=d.error||'could not start guest session'}})
+.catch(function(){$('guest').disabled=false;
+$('pwErr').textContent='cannot reach the backend'})};
 function login(){
 $('pwErr').textContent='';$('go').disabled=true;
 api('/webdl/api/login',{method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({pass:$('pw').value})}).then(function(r){return r.json()})
 .then(function(d){$('go').disabled=false;
-if(d.token){T.tok=d.token;ls('webdl_tok',d.token);view()}
+if(d.token){T.tok=d.token;T.role=d.role;ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
 else{$('pwErr').textContent=d.error||'wrong password'}})
 .catch(function(e){$('go').disabled=false;
 $('pwErr').textContent='cannot reach the backend'})}
@@ -157,17 +198,17 @@ $('metaSub').textContent=(d.extractor||'')+(d.duration?
 ' · '+d.duration:'');
 var box=$('fmts');box.innerHTML='';
 var def=null;
-(d.formats||[]).forEach(function(f,i){
+(d.formats||[]).forEach(function(i){
 var d1=document.createElement('div');d1.className='fmt';
 var lab=document.createElement('div');
-lab.textContent=f.label;
+lab.textContent=i.label;
 var sz=document.createElement('span');sz.className='sz';
-sz.textContent=f.size||'';
+sz.textContent=i.size||'';
 d1.appendChild(lab);d1.appendChild(sz);
 d1.onclick=function(){
 box.querySelectorAll('.fmt').forEach(function(x){x.classList.remove('on')});
-d1.classList.add('on');$('custom').value=f.fmt};
-if(!def&&f.best)def=d1;
+d1.classList.add('on');$('custom').value=i.fmt};
+if(!def&&i.best)def=d1;
 box.appendChild(d1)});
 if(def)def.click();
 }).catch(function(e){$('fetch').disabled=false;
@@ -188,10 +229,21 @@ else{$('urlErr').textContent=d.error||'could not start'}})
 .catch(function(){$('urlErr').textContent='backend unreachable'})}
 function esc(s){var d=document.createElement('div');d.textContent=s||'';
 return d.innerHTML}
+function fmtT(t){var d=new Date((t.t||0)*1000);
+return d.toLocaleTimeString()}
 function refresh(){
 api('/webdl/api/state').then(function(r){return r.json()})
 .then(function(d){$('conn').style.display='none';
 if(!d.ok)return;
+T.role=d.role||T.role;
+if(d.role)ls('webdl_role',d.role);
+var sub=$('subline');
+var ob=$('ownerBtn');
+if(ob)ob.classList.toggle('hide',d.role!=='o');
+if(d.role==='o'){sub.textContent='owner mode — no limits'}
+else if(d.me){sub.textContent=d.me.banned?
+'guest · this device is banned':
+'guest · '+d.me.n+' of '+d.me.daily+' downloads used today'}
 var h='';
 (d.tasks||[]).forEach(function(t){
 var st=t.status,pc='';
@@ -206,15 +258,24 @@ h+='<div class="task"><div style="display:flex;justify-content:'
 +'space-between;gap:8px"><div class="tname">'+esc(t.title)
 +'</div>'+pill+'</div>'+pc;
 if(t.error)h+='<div class="err">'+esc(t.error)+'</div>';
+if(st==='done'&&t.tg_ok&&d.tg_allowed){
+if(t.tg==='sending')h+='<button class="btn" disabled>sending…</button>';
+else if(t.tg==='sent')h+='<button class="btn" disabled>\u2708 sent \u2713</button>';
+else h+='<button class="btn pri" data-tg="'+esc(t.id)+'">\u2708 Send to Telegram</button>';}
 if(st==='done')h+='<a class="dl btn pri" href="'+T.api+'/webdl/dl/'
 +encodeURIComponent(t.id)+'?auth='+encodeURIComponent(T.tok)
-+'" download>⬇ Save to device</a>';
++'" download>\u2b07 Save to device</a>';
 if(st==='downloading'||st==='queued'||st==='processing')
 h+='<div style="margin-top:8px"><button class="btn dng" data-cancel="'
 +esc(t.id)+'">Cancel</button></div>';
 h+='</div>';
 });
 $('tasks').innerHTML=h;
+$('tasks').querySelectorAll('[data-tg]').forEach(function(b){
+b.onclick=function(){api('/webdl/api/tg',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({id:b.getAttribute('data-tg')})})
+.then(refresh).catch(function(){})}});
 $('tasks').querySelectorAll('[data-cancel]').forEach(function(b){
 b.onclick=function(){api('/webdl/api/cancel',{method:'POST',
 headers:{'Content-Type':'application/json'},
@@ -222,6 +283,65 @@ body:JSON.stringify({id:b.getAttribute('data-cancel')})})
 .then(refresh).catch(function(){})}});
 }).catch(function(){$('conn').style.display='block'});
 if(poll)clearTimeout(poll);poll=setTimeout(refresh,2500)}
+function admin(){
+if(T.role!=='o')return;
+api('/webdl/api/admin/state').then(function(r){return r.json()})
+.then(function(d){
+if(!d.ok)return;
+var g=d.globals||{};
+$('gUserMax').value=g.user_max_gb;$('gUserDaily').value=g.user_daily;
+$('gTtl').value=g.ttl;$('gMax').value=g.max_gb;$('gConc').value=g.conc;
+var h='';
+(d.users||[]).forEach(function(u){
+h+='<div class="urow"><span class="dev">'+esc(u.dev.slice(0,14))+
+'…</span><span class="mut">'+u.n+'/day</span>'+
+'<input type="number" step="0.1" placeholder="'+(u.limit_gb||'def')+
+'" data-lim="'+esc(u.dev)+'" title="per-user cap (GB)">'+
+'<button class="btn sm" data-setlim="'+esc(u.dev)+'">set</button>'+
+'<button class="btn sm '+(u.banned?'':'dng')+'" data-ban="'+esc(u.dev)+
+'" data-banned="'+(u.banned?1:0)+'">'+(u.banned?'unban':'ban')+
+'</button></div>'});
+$('users').innerHTML=h||'<div class="mut">no guests yet</div>';
+$('users').querySelectorAll('[data-ban]').forEach(function(b){
+b.onclick=function(){api('/webdl/api/admin/user',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({dev:b.getAttribute('data-ban'),
+banned:b.getAttribute('data-banned')!=='1'})}).then(admin)}});
+$('users').querySelectorAll('[data-setlim]').forEach(function(b){
+b.onclick=function(){var inp=document.querySelector(
+'[data-lim="'+b.getAttribute('data-setlim')+'"]');
+api('/webdl/api/admin/user',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({dev:b.getAttribute('data-setlim'),
+limit_gb:parseFloat(inp.value)||0})}).then(admin)}});
+var a='';
+(d.events||[]).slice(-40).reverse().forEach(function(e){
+a+='<div>'+fmtT(e)+' — '+esc(e.m)+'</div>'});
+$('acts').innerHTML=a;
+}).catch(function(){});
+if(admPoll)clearTimeout(admPoll);admPoll=null;
+if(!$('admWrap').classList.contains('hide'))
+admPoll=setTimeout(admin,8000)}
+$('gSave').onclick=function(){
+$('gMsg').textContent='';
+api('/webdl/api/admin/globals',{method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({user_max_gb:parseFloat($('gUserMax').value)||0,
+user_daily:parseInt($('gUserDaily').value)||0,
+ttl:parseFloat($('gTtl').value)||0,
+max_gb:parseFloat($('gMax').value)||0,
+conc:parseInt($('gConc').value)||0})})
+.then(function(r){return r.json()}).then(function(d){
+$('gMsg').textContent=d.ok?'saved \u2713':'failed';
+setTimeout(function(){$('gMsg').textContent=''},3000);admin()})
+.catch(function(){$('gMsg').textContent='failed'})};
+(function ownerBtn(){
+var b=document.createElement('button');
+b.className='btn hide';b.id='ownerBtn';b.textContent='\u2699 Owner panel';
+b.style.marginBottom='12px';
+b.onclick=function(){var w=$('admWrap');w.classList.toggle('hide');
+if(!w.classList.contains('hide'))admin()};
+$('main').insertBefore(b,$('main').firstChild)})();
 view();
 })();
 </script></body></html>
