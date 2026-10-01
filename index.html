@@ -172,11 +172,15 @@ style="margin-top:8px">
 </div>
 <div id="guestRow" class="hide">
 <div class="mut" style="text-align:center;margin:10px 0 4px">— or —</div>
+<div id="guestOnly" class="hide">
 <button class="btn wide" data-act="guest">Continue as guest</button>
 <div class="hint" style="text-align:center">guests get smaller files and a few downloads a day</div>
-<div style="margin-top:10px"><button class="btn wide" data-act="quick">⚡ Create a quick account</button></div>
+</div>
+<div id="quickOnly" class="hide" style="margin-top:10px">
+<button class="btn wide" data-act="quick">⚡ Create a quick account</button>
 <div class="hint" style="text-align:center">we generate a username + password for you —
 same limits as guest, but it remembers you and you can keep it</div>
+</div>
 </div>
 <div id="quickBox" class="card hide" style="border-color:var(--ac)">
 <div class="tname">⚡ Your new account</div>
@@ -360,7 +364,9 @@ $('stLikes').textContent=d.likes>0?d.likes:'–';
 $('footVer').textContent='engine '+(d.version||'');
 setAnnounce(d.announcement);
 if(!ls('webdl_theme'))applyTheme(d.default_theme||'midnight');
-$('guestRow').classList.toggle('hide',!d.guests);
+$('guestRow').classList.toggle('hide',!d.guests&&!d.quick);
+$('guestOnly').classList.toggle('hide',!d.guests);
+$('quickOnly').classList.toggle('hide',!d.quick);
 if(d.music&&!ls('webdl_music')){ls('webdl_music','1')}
 if(d.contact){$('contactBox').classList.remove('hide');
 $('contactBtn').href='https://t.me/'+encodeURIComponent(d.contact)}
@@ -586,7 +592,9 @@ return '<option value="'+x+'"'+(a.default_theme===x?' selected':'')+'>'+x+'</opt
 '<label class="tgl"><input type="checkbox" id="sMusic"'+(a.music?' checked':'')+
 '>ambient music default</label>'+
 '<label class="tgl"><input type="checkbox" id="sNotify"'+(a.notify_done?' checked':'')+
-'>telegram ping on finish</label></div>'+
+'>telegram ping on finish</label>'+
+'<label class="tgl"><input type="checkbox" id="sQuick"'+(a.quick_mode?' checked':'')+
+'>quick accounts</label></div>'+
 '<div style="margin-top:11px"><button class="btn pri" data-act="ssave">Save site</button></div></div>'}
 if(T.tab==='cloud'){
 var pd=a.pixeldrain||{};
@@ -817,7 +825,7 @@ var ck=function(i){var e=$(i);return !!(e&&e.checked)};
 var b={site_name:v('sName'),owner_contact:v('sContact'),announcement:v('sAnn'),
 default_theme:v('sTheme')||'midnight',theme:v('sAccent'),
 maintenance:ck('sMaint'),guest_mode:ck('sGuests'),music:ck('sMusic'),
-notify_done:ck('sNotify')};
+notify_done:ck('sNotify'),quick_mode:ck('sQuick')};
 post('/webdl/api/admin/site',b).then(function(){
 toast('site saved ✓');if(b.default_theme)applyTheme(b.default_theme);loadAdm()})},
 'csave':function(){var lo=$('cLow'),hi=$('cHigh');
