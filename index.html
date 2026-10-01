@@ -1,878 +1,809 @@
 
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WZ Web Downloader</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d14">
+<title>Web Downloader</title>
 <style>
-:root{--bg:#05060a;--sf:#0b0d14;--sf2:#11141d;--line:#232a3d;--tx:#eef1f8;
---mut:#98a2b8;--ac:#7c5cff;--ac2:#a78bfa;--ok:#2ecc71;--err:#ff6b6b}
-*{box-sizing:border-box;margin:0}
-body{background:var(--bg);color:var(--tx);font:15px/1.5 -apple-system,
-BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;
-background:radial-gradient(40% 30% at 20% 0%,rgba(124,92,255,.16),transparent 70%),
-radial-gradient(30% 26% at 85% 8%,rgba(167,139,250,.10),transparent 72%)}
-.wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px;position:relative}
-h1{font-size:22px;letter-spacing:-.02em;margin-bottom:2px}
-.sub{color:var(--mut);font-size:13px;margin-bottom:18px}
-.card{background:var(--sf);border:1px solid var(--line);border-radius:16px;
-padding:16px;margin-bottom:14px}
-input,select{width:100%;background:var(--sf2);border:1px solid var(--line);
-color:var(--tx);border-radius:10px;padding:11px 13px;font:inherit;outline:0}
-input:focus{border-color:var(--ac2)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
-background:var(--sf2);border:1px solid var(--line);color:var(--tx);
-border-radius:999px;padding:10px 18px;font:600 14px/1 inherit;cursor:pointer;
-transition:transform .15s,box-shadow .15s}
+:root{--bg:#07080d;--sf:#0d1018;--sf2:#141926;--line:#232a3d;--tx:#eef1f8;
+--mut:#93a0b8;--ac:#7c5cff;--ac2:#a78bfa;--ok:#31d0aa;--err:#ff6b81;--warn:#ffb45c;
+--rad:16px}
+[data-theme="ocean"]{--bg:#04101a;--sf:#07192a;--sf2:#0c2337;--line:#164055;
+--tx:#e8f6ff;--mut:#8fb4c9;--ac:#2bb6ff;--ac2:#67e8f9}
+[data-theme="sunset"]{--bg:#150a12;--sf:#1e0f1b;--sf2:#2a1526;--line:#48203c;
+--tx:#ffeee6;--mut:#c39aa8;--ac:#ff7a59;--ac2:#ffb86b}
+[data-theme="forest"]{--bg:#06120d;--sf:#0a1c14;--sf2:#0f2a1e;--line:#1d4632;
+--tx:#e9fff5;--mut:#93c4ac;--ac:#34d399;--ac2:#a7f3d0}
+[data-theme="light"]{--bg:#f4f6fb;--sf:#ffffff;--sf2:#eef1f8;--line:#dbe1ee;
+--tx:#141824;--mut:#5c6679;--ac:#6b46ff;--ac2:#8b6bff}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,
+"Segoe UI",Roboto,sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+background:radial-gradient(42% 32% at 18% -4%,color-mix(in srgb,var(--ac) 22%,transparent),transparent 70%),
+radial-gradient(34% 28% at 88% 6%,color-mix(in srgb,var(--ac2) 16%,transparent),transparent 72%)}
+.wrap{max-width:720px;margin:0 auto;padding:18px 15px 70px;position:relative;z-index:1}
+h1{font-size:21px;letter-spacing:-.02em}
+.card{background:color-mix(in srgb,var(--sf) 92%,transparent);border:1px solid var(--line);
+border-radius:var(--rad);padding:15px;margin-bottom:12px;backdrop-filter:blur(8px)}
+.card.tight{padding:12px}
+input,select,textarea{width:100%;background:var(--sf2);border:1px solid var(--line);
+color:var(--tx);border-radius:11px;padding:11px 13px;font:inherit;outline:0}
+input:focus,textarea:focus{border-color:var(--ac2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+background:var(--sf2);border:1px solid var(--line);color:var(--tx);border-radius:999px;
+padding:10px 17px;font:600 14px/1 inherit;cursor:pointer;transition:transform .12s,border-color .12s}
 .btn:hover{transform:translateY(-1px);border-color:var(--ac2)}
-.btn.pri{background:linear-gradient(135deg,var(--ac),var(--ac2));
-border:0;color:#fff;box-shadow:0 8px 24px -10px var(--ac)}
-.btn.dng{border-color:#5b2230;color:#ff9db0}
-.btn.sm{padding:6px 12px;font-size:12px}
-.btn:disabled{opacity:.5;cursor:default;transform:none}
-.row{display:flex;gap:10px}
-.row>*{flex:1}
-.bar{height:8px;background:var(--sf2);border-radius:99px;overflow:hidden;
-margin:8px 0 4px}
-.bar i{display:block;height:100%;border-radius:99px;
-background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .5s}
-.meta{display:flex;justify-content:space-between;color:var(--mut);
-font-size:12px}
-.task{border:1px solid var(--line);border-radius:14px;padding:13px 14px;
-margin-bottom:10px;background:var(--sf)}
-.tname{font-weight:600;font-size:14px;word-break:break-word}
-.pill{font:600 10px/1.4 inherit;padding:2px 9px;border-radius:99px;
-background:var(--sf2);border:1px solid var(--line);color:var(--mut)}
-.pill.ok{color:var(--ok);border-color:#1d4d33}.pill.err{color:var(--err);
-border-color:#5b2230}
-.fmt{display:flex;justify-content:space-between;align-items:center;
-padding:9px 12px;border:1px solid var(--line);border-radius:10px;
-margin-bottom:7px;cursor:pointer;background:var(--sf2)}
-.fmt:hover{border-color:var(--ac2)}.fmt.on{border-color:var(--ac);
-box-shadow:0 0 0 1px var(--ac) inset}
-.fmt .sz{color:var(--mut);font-size:12px;white-space:nowrap;margin-left:10px}
-#conn{display:none;background:#3b2412;border:1px solid #7c4a1c;color:#ffce9a;
-border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px}
-.err{color:var(--err);font-size:13px;margin-top:8px;word-break:break-word}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:linear-gradient(135deg,var(--ac),var(--ac2));border:0;color:#fff;
+box-shadow:0 10px 26px -12px var(--ac)}
+.btn.dng{border-color:color-mix(in srgb,var(--err) 45%,var(--line));color:var(--err)}
+.btn.sm{padding:6px 12px;font-size:12px;border-radius:9px}
+.btn.wide{width:100%}
+.btn[disabled]{opacity:.5;cursor:default;transform:none}
+.row{display:flex;gap:9px}.row>*{flex:1}
 .mut{color:var(--mut);font-size:12px}
-a.dl{display:inline-flex;margin-top:8px}
-.gear{position:absolute;top:18px;right:16px;background:none;border:0;
-color:var(--mut);font-size:20px;cursor:pointer}
+.sechead{font:700 11px/1 inherit;letter-spacing:.09em;color:var(--mut);
+text-transform:uppercase;margin:18px 0 8px}
+.bar{height:8px;background:var(--sf2);border-radius:99px;overflow:hidden;margin:9px 0 4px}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--ac),var(--ac2));
+transition:width .45s ease}
+.bar.up i{background:linear-gradient(90deg,var(--ok),var(--ac2))}
+.meta{display:flex;justify-content:space-between;color:var(--mut);font-size:12px;gap:8px}
+.task{border:1px solid var(--line);border-radius:14px;padding:12px 13px;margin-bottom:9px;
+background:var(--sf)}
+.tname{font-weight:650;font-size:14px;word-break:break-word}
+.pill{font:700 10px/1.5 inherit;padding:3px 9px;border-radius:99px;background:var(--sf2);
+border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.pill.err{color:var(--err);border-color:color-mix(in srgb,var(--err) 40%,var(--line))}
+.pill.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,var(--line))}
+.pill.live{color:var(--ac2);border-color:var(--ac2);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.55}}
+.err{color:var(--err);font-size:13px;margin-top:7px;word-break:break-word}
+.hint{color:var(--mut);font-size:12px;margin-top:7px}
+.hrow{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--line);
+border-radius:10px;margin-bottom:6px;background:var(--sf2);font-size:12.5px;flex-wrap:wrap;align-items:center}
+.tgl{display:flex;align-items:center;gap:9px;font-size:13.5px;cursor:pointer}
+.tgl input{width:auto;accent-color:var(--ac)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+@media(max-width:430px){.grid3{grid-template-columns:1fr 1fr}}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.02em}
+.logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--ac),var(--ac2));
+display:grid;place-items:center;font-size:15px}
+.iconbtn{background:var(--sf2);border:1px solid var(--line);color:var(--tx);border-radius:11px;
+width:38px;height:38px;display:grid;place-items:center;cursor:pointer;font-size:16px}
+.iconbtn:hover{border-color:var(--ac2)}
+.hero{text-align:center;padding:22px 0 6px}
+.hero h1{font-size:27px;margin-bottom:6px}
+.stats{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin:16px 0 4px}
+.stat{background:var(--sf);border:1px solid var(--line);border-radius:13px;padding:9px 16px;
+text-align:center;min-width:88px}
+.stat b{display:block;font-size:17px}
+.stat span{color:var(--mut);font-size:10.5px;letter-spacing:.04em}
+.announce{display:none;border:1px solid var(--ac);border-radius:12px;padding:10px 13px;
+margin-bottom:12px;font-size:13px;line-height:1.5;
+background:linear-gradient(135deg,color-mix(in srgb,var(--ac) 20%,transparent),
+color-mix(in srgb,var(--ac2) 10%,transparent))}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;
+scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;background:var(--sf2);border:1px solid var(--line);color:var(--mut);
+border-radius:999px;padding:8px 14px;font:600 13px/1 inherit;cursor:pointer}
+.tab.on{color:#fff;background:linear-gradient(135deg,var(--ac),var(--ac2));border-color:transparent}
+.urow{display:flex;align-items:center;gap:7px;padding:9px 10px;border:1px solid var(--line);
+border-radius:11px;margin-bottom:7px;background:var(--sf2);font-size:13px;flex-wrap:wrap}
+.urow input{width:62px;padding:6px 8px;border-radius:8px}
+.urow .dev{font-family:ui-monospace,monospace;font-size:11.5px;flex:1;min-width:100px}
+.foot{text-align:center;color:var(--mut);font-size:11px;margin-top:24px;line-height:1.9}
+.foot a{color:var(--ac2);text-decoration:none}
+.fab{position:fixed;right:14px;bottom:16px;z-index:5;display:flex;gap:8px}
+.fab .iconbtn{width:44px;height:44px;border-radius:14px;background:var(--sf);
+box-shadow:0 10px 26px -14px #000}
 .hide{display:none!important}
-.thumb{width:100%;border-radius:10px;margin-bottom:10px;max-height:220px;
-object-fit:contain}
-.urow{display:flex;align-items:center;gap:8px;padding:8px 10px;
-border:1px solid var(--line);border-radius:10px;margin-bottom:7px;
-background:var(--sf2);font-size:13px;flex-wrap:wrap}
-.urow .dev{font-family:monospace;flex:1;min-width:110px}
-.urow input{width:70px;padding:5px 8px;border-radius:8px}
-.divi{text-align:center;color:var(--mut);font-size:12px;margin:12px 0 4px}
-.hero{ text-align:center;padding:26px 0 8px}
-.hero h1{font-size:28px;margin-bottom:6px}
-.hero .tag{color:var(--mut);font-size:14px}
-.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;
-margin:18px 0 6px}
-.stat{background:var(--sf);border:1px solid var(--line);border-radius:14px;
-padding:10px 18px;text-align:center;min-width:96px}
-.stat b{display:block;font-size:18px}
-.stat span{color:var(--mut);font-size:11px}
-.likebar{display:flex;justify-content:center;margin:10px 0 16px}
-.likebtn{background:var(--sf2);border:1px solid var(--line);color:var(--tx);
-border-radius:999px;padding:9px 20px;font:600 14px/1 inherit;cursor:pointer;
-display:inline-flex;align-items:center;gap:8px}
-.likebtn.on{border-color:#5b2230;color:#ff9db0;background:#1b0e15}
-.likebtn:disabled{opacity:.6;cursor:default}
-.tier{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--line);
-border-radius:10px;margin-bottom:8px;background:var(--sf2);font-size:13px;
-align-items:center}
-.tier .ic{font-size:18px}
-.tier b{font-size:13px}
-.tier .mut{font-size:12px}
-.footer{text-align:center;color:var(--mut);font-size:11px;margin-top:26px;
-line-height:1.8}
-.footer a{color:var(--ac2);text-decoration:none}
-.sechead{font:600 13px/1 inherit;letter-spacing:.06em;color:var(--mut);
-text-transform:uppercase;margin:22px 0 8px}
-.announce{display:none;background:linear-gradient(135deg,rgba(124,92,255,.18),rgba(167,139,250,.10));border:1px solid var(--ac);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px;line-height:1.5}
-.maint{display:none;background:#3b2412;border:1px solid #7c4a1c;color:#ffce9a;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px}
-.qbar{height:6px;background:var(--sf2);border-radius:99px;overflow:hidden;margin:6px 0 2px}
-.qbar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2))}
-.chip{display:inline-flex;align-items:center;gap:5px;background:var(--sf2);border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:11px;color:var(--mut);margin:0 6px 6px 0}
-.hrow{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;background:var(--sf2);font-size:12px;flex-wrap:wrap;align-items:center}
-.tgl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx)}
-.tgl input{width:auto}
-textarea{width:100%;background:var(--sf2);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:10px 13px;font:inherit;outline:0;min-height:64px;resize:vertical}
-body.light{--bg:#f2f3f7;--sf:#ffffff;--sf2:#eef0f5;--line:#d4d9e4;--tx:#181b25;--mut:#5b6474}
-body.light::before{opacity:.35}
-.pill.warn{color:#ffce9a;border-color:#7c4a1c}
-</style></head><body><div class="wrap">
-<button class="gear" id="gear" title="Settings">⚙</button>
+.thumb{width:100%;border-radius:12px;margin-bottom:10px;max-height:210px;object-fit:contain}
+.full{min-height:100vh}
+.maint{position:fixed;inset:0;z-index:40;background:var(--bg);display:grid;place-items:center;
+text-align:center;padding:30px}
+.maint .box{max-width:420px}
+.maint h2{font-size:24px;margin-bottom:10px}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);
+border-top-color:var(--ac);animation:sp .8s linear infinite;margin:0 auto 14px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+background:var(--sf);border:1px solid var(--line);color:var(--tx);padding:11px 18px;
+border-radius:999px;font-size:13.5px;z-index:60;opacity:0;transition:.25s;pointer-events:none;
+box-shadow:0 14px 34px -16px #000;max-width:90vw}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{background:var(--sf2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;
+font-size:11.5px;color:var(--mut);cursor:pointer}
+.chip.on{border-color:var(--ac);color:var(--tx)}
+.fmt{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;
+border:1px solid var(--line);border-radius:10px;margin-bottom:6px;cursor:pointer;background:var(--sf2)}
+.fmt:hover{border-color:var(--ac2)}.fmt.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac) inset}
+.fmt .sz{color:var(--mut);font-size:12px;white-space:nowrap;margin-left:10px}
+</style></head><body>
 
-<!-- ============ landing ============ -->
-<div id="landing">
-<div class="announce" id="announce"></div>
+<!-- ===================== MAINTENANCE ===================== -->
+<div class="maint hide" id="maint">
+<div class="box">
+<div class="spin"></div>
+<h2>We'll be right back</h2>
+<p class="mut" id="maintMsg">The site is under maintenance right now. Downloads
+are paused for a little while — please check back soon.</p>
+<div style="margin-top:18px"><button class="btn" data-act="recheck">Check again</button></div>
+</div></div>
+
+<!-- ===================== LANDING ===================== -->
+<div id="s-landing" class="hide">
 <div class="hero">
-<h1 id="siteName">WZ Web Downloader</h1>
-<div class="tag" id="siteTag">your bot's engine, straight to your device</div>
+<div class="logo" style="width:56px;height:56px;font-size:26px;margin:0 auto 12px">⬇</div>
+<h1 id="siteName">Web Downloader</h1>
+<div class="mut" id="siteTag">fast downloads, straight to your device</div>
 </div>
+<div class="announce" id="announce"></div>
 <div class="stats">
-<div class="stat"><b id="stUsers">–</b><span>members</span></div>
-<div class="stat"><b id="stDls">–</b><span>downloads</span></div>
-<div class="stat"><b id="stLikes">–</b><span>likes</span></div>
+<div class="stat"><b id="stUsers">–</b><span>MEMBERS</span></div>
+<div class="stat"><b id="stDls">–</b><span>DOWNLOADS</span></div>
+<div class="stat"><b id="stLikes">–</b><span>LIKES</span></div>
 </div>
-<div class="likebar">
-<button class="likebtn" id="likeBtn">❤ Like this service</button>
+<div style="text-align:center;margin:12px 0 16px">
+<button class="btn" id="likeBtn" data-act="like">❤ Like this service</button>
 </div>
-<div id="conn">Backend unreachable — it sleeps at night (06:00–23:00 IST)
-and during restarts. Retrying automatically…</div>
 
-<div class="sechead">Sign in</div>
-<div id="login" class="card">
-<div class="mut" style="margin-bottom:6px">Username</div>
-<input id="user" placeholder="your username" autocomplete="username">
-<div class="mut" style="margin:8px 0 6px">Password</div>
-<input id="pw" type="password" placeholder="your password"
-autocomplete="current-password">
-<div class="err" id="pwErr"></div>
-<div style="margin-top:12px"><button class="btn pri" id="go"
-style="width:100%">Sign in</button></div>
-<div class="divi">— or —</div>
-<button class="btn" id="inviteToggle" style="width:100%">I have an invite
-code</button>
+<div class="card">
+<div class="sechead" style="margin-top:0">Sign in</div>
+<input id="user" placeholder="username" autocomplete="username">
+<input id="pw" type="password" placeholder="password" autocomplete="current-password"
+style="margin-top:8px">
+<div class="err" id="loginErr"></div>
+<div style="margin-top:11px"><button class="btn pri wide" data-act="login">Sign in</button></div>
+<div class="mut" style="text-align:center;margin:10px 0 4px">— or —</div>
+<button class="btn wide" data-act="invite-toggle">I have an invite code</button>
 <div id="inviteBox" class="hide" style="margin-top:10px">
-<input id="inviteCode" placeholder="invite code" style="margin-bottom:8px">
-<div class="mut" style="margin-bottom:6px">Pick a username + password for
-your special account</div>
-<button class="btn pri" id="inviteGo" style="width:100%">Create account
-with invite</button>
+<input id="invCode" placeholder="invite code (WZ-XXXX)">
+<input id="invUser" placeholder="pick a username" style="margin-top:8px">
+<input id="invPass" type="password" placeholder="pick a password" style="margin-top:8px">
+<div style="margin-top:10px"><button class="btn pri wide" data-act="invite-go">Create my account</button></div>
+<div class="hint">one-time code — it makes a special account with the highest limits</div>
 </div>
 <div id="guestRow" class="hide">
-<div class="divi">— or —</div>
-<button class="btn" id="guest" style="width:100%">Continue as guest</button>
-<div class="mut" style="margin-top:8px">guests: limited file size & a
-few downloads per day</div>
-</div>
-<div class="mut" style="margin-top:12px">Owner? leave the username empty
-and enter the owner password.</div>
-</div>
-
-<div class="sechead">Get more limits</div>
-<div class="card" id="limitsCard">
-<div class="tier"><div class="ic">👤</div><div>
-<b>Members</b><div class="mut">account holders — bigger files and more
-downloads per day than guests</div></div></div>
-<div class="tier"><div class="ic">⭐</div><div>
-<b>Special members</b><div class="mut">invite-code accounts — the highest
-limits</div></div></div>
-<div class="tier"><div class="ic">🔓</div><div>
-<b>No limits at all</b><div class="mut">ask the owner about special
-arrangements</div></div></div>
-<div id="contactBox" class="hide" style="margin-top:12px">
-<a class="btn pri" id="contactBtn" target="_blank" rel="noopener"
-style="width:100%;text-decoration:none">Contact the owner</a>
-<div class="mut" style="margin-top:8px;text-align:center">on Telegram —
-for an account, more limits or help</div>
-</div>
-<div id="noContact" class="mut" style="text-align:center">To get an
-account or raise your limits, contact the owner.</div>
-</div>
-
-<div class="footer">
-Running on the bot's own engine · files auto-delete after a few hours<br>
-<a id="footVer" href="#"></a>
+<div class="mut" style="text-align:center;margin:10px 0 4px">— or —</div>
+<button class="btn wide" data-act="guest">Continue as guest</button>
+<div class="hint" style="text-align:center">guests get smaller files and a few downloads a day</div>
 </div>
 </div>
 
-<!-- ============ app ============ -->
-<div id="main" class="hide">
+<div class="card">
+<div class="sechead" style="margin-top:0">Limits</div>
+<div class="hrow"><div>👤 Member</div><div class="mut" id="limMember">bigger files, more per day</div></div>
+<div class="hrow"><div>⭐ Special</div><div class="mut" id="limSpecial">invite accounts — highest limits</div></div>
+<div class="hrow"><div>🔓 Unlimited</div><div class="mut">ask the owner</div></div>
+<div id="contactBox" class="hide" style="margin-top:11px">
+<a class="btn pri wide" id="contactBtn" target="_blank" rel="noopener"
+style="text-decoration:none">Contact the owner</a></div>
+</div>
+<div class="foot">
+files auto-delete after a few hours · powered by the bot's own engine<br>
+<a id="footVer"></a></div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="s-app" class="hide">
+<div class="top">
+<div class="brand"><div class="logo">⬇</div><span id="appName">Downloader</span></div>
+<div style="display:flex;gap:7px">
+<button class="iconbtn" id="musicBtn" data-act="music" title="Ambient sound">♪</button>
+<button class="iconbtn" data-act="theme" title="Theme">◐</button>
+<button class="iconbtn hide" id="gearBtn" data-act="settings" title="Settings">⚙</button>
+</div></div>
 <div class="announce" id="announce2"></div>
-<div class="maint" id="maintBox">🛠 The site is under maintenance — new downloads
-are paused. Check back soon.</div>
-<div class="sub" id="subline">signed in</div>
-<div class="qbar hide" id="qbar"><i id="qfill" style="width:0%"></i></div>
+<div class="card tight">
+<div class="meta"><span id="whoami">signed in</span><span id="slotTxt"></span></div>
+<div class="bar hide" id="qbar"><i id="qfill" style="width:0%"></i></div>
+<div class="mut" id="quotaTxt" style="margin-top:5px"></div>
+</div>
 <div class="card">
 <div class="row">
-<input id="url" placeholder="Paste any link — YouTube, Instagram, X, any site, direct file, or magnet:" style="flex:4">
-<button class="btn" id="paste" title="Paste from clipboard" style="flex:0 0 auto">📋</button>
+<input id="url" placeholder="paste any link — video, song, file, or magnet:" style="flex:6">
+<button class="iconbtn" data-act="paste" title="Paste" style="flex:0 0 auto">📋</button>
 </div>
-<div class="mut" style="margin-top:6px" id="slots"></div>
 <div class="err" id="urlErr"></div>
-<div style="margin-top:12px"><button class="btn pri" id="fetch">Get formats</button></div>
+<div style="margin-top:11px;display:flex;gap:9px">
+<button class="btn pri" data-act="fetch" style="flex:2">Get formats</button>
+<button class="btn" data-act="quick-audio" style="flex:1">♪ MP3</button>
+</div>
+<div class="hint">any site the bot supports · direct files · magnet &amp; torrent links</div>
 </div>
 <div id="pick" class="card hide">
 <img id="thumb" class="thumb hide" alt="">
 <div class="tname" id="metaTitle"></div>
 <div class="mut" id="metaSub"></div>
-<div id="fmts" style="margin-top:12px"></div>
-<div class="mut" style="margin-top:10px">Advanced: yt-dlp format string
-(leave as-is unless you know it)</div>
-<input id="custom" value="bv*+ba/b" style="margin-top:6px">
-<div class="mut" style="margin:10px 0 4px">Save as (optional — keep
-extension)</div>
-<input id="fname" placeholder="video name.mp4">
-<label class="tgl" style="margin-top:10px"><input type="checkbox" id="subs">
-Also get subtitles (English/Hindi, when available)</label>
-<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-<button class="btn pri" id="start">Download to device</button>
-<button class="btn" id="audio">Audio (mp3)</button>
+<div id="fmts" style="margin-top:11px"></div>
+<div class="mut" style="margin-top:9px">format string (leave unless you know it)</div>
+<input id="custom" value="bv*+ba/b" style="margin-top:5px">
+<div class="grid2" style="margin-top:9px">
+<div><div class="mut">save as (optional)</div><input id="fname" placeholder="name.mp4"></div>
+<div><div class="mut">subtitles</div>
+<label class="tgl" style="padding-top:9px"><input type="checkbox" id="subs"> also fetch</label></div>
+</div>
+<div style="margin-top:11px;display:flex;gap:9px">
+<button class="btn pri" data-act="start" style="flex:2">⬇ Download</button>
+<button class="btn" data-act="start-audio" style="flex:1">♪ audio</button>
 </div>
 </div>
+<div class="sechead">Downloads</div>
 <div id="tasks"></div>
-<div class="sechead">My downloads</div>
-<div class="card" id="histCard">
-<div id="hist" class="mut" style="font-size:13px">loading…</div>
-</div>
-<div style="text-align:center;margin-top:18px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-<button class="btn sm" id="chgPass">Change password</button>
-<button class="btn sm" id="report">Report a problem</button>
-<button class="btn sm" id="signout">Sign out</button>
-</div>
-
-<!-- ============ owner panel ============ -->
-<div id="admin" class="hide">
-<div class="card">
-<div class="tname">🌐 Site</div>
-<div class="row" style="margin-top:10px">
-<div><div class="mut">site name</div><input id="sName"></div>
-<div><div class="mut">owner contact (Telegram)</div><input id="sContact"></div>
-</div>
-<div class="row" style="margin-top:8px">
-<div><div class="mut">theme color</div><input id="sTheme" type="color"
-style="padding:4px;height:44px"></div>
-<div><div class="mut">cloud upload window: from GB</div><input id="sPdLow"></div>
-<div><div class="mut">up to GB</div><input id="sPdHigh"></div>
-</div>
-<div class="mut" style="margin:8px 0 4px">announcement (banner on the
-site for everyone)</div>
-<textarea id="sAnn" placeholder="e.g. new: magnet links now work!"></textarea>
-<div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
-<label class="tgl"><input type="checkbox" id="sMaint">🛠 Maintenance mode</label>
-<label class="tgl"><input type="checkbox" id="sGuests">Guest downloads</label>
-</div>
-<div style="margin-top:10px"><button class="btn" id="sSave">Save site settings</button>
-<span class="mut" id="sMsg" style="margin-left:10px"></span></div>
-</div>
-<div class="card">
-<div class="tname">☁ Cloud route (pixeldrain)</div>
-<div class="mut" id="pdInfo" style="margin-top:6px"></div>
-<div class="mut" style="margin-top:8px">API key set via /ws — this panel
-controls the upload window (files this size go to the cloud).</div>
-</div>
-<div class="card">
-<div class="tname">🎟 Invite codes</div>
-<div style="display:flex;gap:10px;margin-top:8px;align-items:center">
-<input id="invN" type="number" value="3" min="1" max="20" style="width:80px">
-<button class="btn sm" id="invMake">Generate</button>
-<span class="mut">one-time codes for special accounts</span>
-</div>
-<div id="invList" style="margin-top:10px"></div>
-</div>
-<div class="card">
-<div class="tname">⚙ Owner panel</div>
-<div class="row" style="margin-top:10px">
-<div><div class="mut">member file cap (GB)</div>
-<input id="gVMax"></div>
-<div><div class="mut">member downloads/day</div>
-<input id="gVDaily"></div>
-</div>
-<div class="row" style="margin-top:8px">
-<div><div class="mut">special file cap (GB)</div>
-<input id="gSMax"></div>
-<div><div class="mut">special downloads/day</div>
-<input id="gSDaily"></div>
-</div>
-<div class="row" style="margin-top:8px">
-<div><div class="mut">guest file cap (GB)</div>
-<input id="gUserMax"></div>
-<div><div class="mut">guest downloads/day</div>
-<input id="gUserDaily"></div>
-</div>
-<div class="row" style="margin-top:8px">
-<div><div class="mut">file TTL (h)</div><input id="gTtl"></div>
-<div><div class="mut">disk max (GB)</div><input id="gMax"></div>
-<div><div class="mut">parallel slots</div><input id="gConc"></div>
-</div>
-<div class="row" style="margin-top:8px">
-<div><div class="mut">global bandwidth MB/day</div>
-<input id="gBwG"></div>
-<div><div class="mut">user bandwidth MB/day</div>
-<input id="gBwU"></div>
-</div>
-<div style="margin-top:10px"><button class="btn" id="gSave">Save globals</button>
-<span class="mut" id="gMsg" style="margin-left:10px"></span></div>
-<div class="mut" id="ckInfo" style="margin-top:8px"></div>
-</div>
-<div class="card">
-<div style="display:flex;justify-content:space-between;align-items:center">
-<div class="tname">Accounts</div>
-<button class="btn dng sm" id="unbanAll">Unban ALL banned</button>
-</div>
-<div id="accounts" style="margin-top:8px"></div>
-</div>
-<div class="card">
-<div class="tname">Guest devices</div>
-<div id="users" style="margin-top:8px"></div>
-</div>
-<div class="card">
-<div class="tname">📦 Disk</div>
-<div class="mut" id="diskSum" style="margin:6px 0"></div>
-<div id="diskList" style="margin-top:6px"></div>
-<div style="margin-top:10px"><button class="btn dng" id="wipeDone">Delete
-ALL finished files</button></div>
-</div>
-<div class="card">
-<div class="tname">🕐 Recent downloads</div>
-<div class="mut" id="todayLine" style="margin:6px 0"></div>
-<div id="histList"></div>
-</div>
-<div class="card">
-<div class="tname">🔧 Tools</div>
-<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-<button class="btn sm" id="ckTest">Test YouTube cookies</button>
-<button class="btn sm" id="reload">Reload settings</button>
-<button class="btn sm" id="ownPass">Change owner password</button>
-</div>
-<div class="mut" id="toolMsg" style="margin-top:8px"></div>
-</div>
-<div class="card">
-<div class="tname">Activity</div>
-<div id="acts" class="mut" style="font-size:12px;line-height:1.7;max-height:220px;overflow:auto"></div>
-</div>
+<div class="sechead">My history</div>
+<div class="card tight"><div id="hist" class="mut">nothing yet</div></div>
+<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px">
+<button class="btn sm" data-act="chgpass">Change password</button>
+<button class="btn sm" data-act="report">Report a problem</button>
+<button class="btn sm" data-act="signout">Sign out</button>
 </div>
 </div>
 
+<!-- ===================== SETTINGS (separate page) ===================== -->
+<div id="s-settings" class="hide">
+<div class="top">
+<div class="brand"><div class="logo">⚙</div><span>Owner settings</span></div>
+<button class="btn sm" data-act="back">← Back to site</button>
+</div>
+<div class="tabs" id="tabs"></div>
+<div id="tabBody"></div>
+<div class="foot">changes apply instantly — no restart needed</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="fab">
+<button class="iconbtn hide" id="fabTop" data-act="totop" title="Top">↑</button>
+</div>
 <script>
 (function(){
-var T={api:'',tok:'',role:'',user:''},poll=null,admPoll=null,liked=false;
+var T={api:'',tok:'',role:'',user:'',meta:{},st:{},adm:{},tab:'users',theme:'midnight'};
 function $(i){return document.getElementById(i)}
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);
 localStorage.setItem(k,v)}catch(e){return null}}
-function dev(){var d=ls('webdl_dev');if(!d){d='d'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);ls('webdl_dev',d)}return d}
+function dev(){var d=ls('webdl_dev');if(!d){d='d'+Math.random().toString(36).slice(2,10)+
+Date.now().toString(36);ls('webdl_dev',d)}return d}
+function fp(){try{var c=document.createElement('canvas'),x=c.getContext('2d');
+x.textBaseline='top';x.font='14px Arial';x.fillStyle='#f60';x.fillRect(0,0,120,30);
+x.fillStyle='#069';x.fillText('wzfix-fp',2,15);var d=c.toDataURL();
+var s=[d.length,screen.width+'x'+screen.height,screen.colorDepth,navigator.language,
+(navigator.languages||[]).join(','),navigator.hardwareConcurrency||0,
+(Intl.DateTimeFormat().resolvedOptions().timeZone||''),(navigator.platform||'')].join('|');
+var h=0;for(var i=0;i<s.length;i++){h=((h*31)+s.charCodeAt(i))>>>0}return 'f'+h.toString(16)}
+catch(e){return ''}}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+return '&#'+c.charCodeAt(0)+';'})}
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('on');
+clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('on')},2600)}
 function api(p,o){o=o||{};o.headers=o.headers||{};
 if(T.tok)o.headers['Authorization']='Bearer '+T.tok;
 return fetch(T.api+p,o).then(function(r){
-if(r.status===401&&p.indexOf('/api/login')<0){T.tok='';
-ls('webdl_tok','');location.reload();throw new Error('session expired')}
+if(r.status===401&&p.indexOf('/api/login')<0&&p.indexOf('/api/dl/')<0){
+T.tok='';ls('webdl_tok','');location.reload();throw new Error('session')}
 return r})}
+function post(p,b){return api(p,{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify(b||{})}).then(function(r){return r.json()}).catch(function(){return {}})}
+function go(scr){['s-landing','s-app','s-settings'].forEach(function(i){$(i).classList.add('hide')});
+$(scr).classList.remove('hide');window.scrollTo(0,0)}
+function setAnnounce(a){var t=(a||'').trim();
+['announce','announce2'].forEach(function(i){var el=$(i);if(!el)return;
+if(t){el.textContent=t;el.style.display='block'}else{el.style.display='none'}})}
+function applyTheme(n){T.theme=n||'midnight';document.documentElement.setAttribute('data-theme',T.theme);
+ls('webdl_theme',T.theme)}
+var Amb={ctx:null,g:null,on:false,osc:[],iv:null,
+ start:function(){try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return false;
+ this.ctx=this.ctx||new C();var c=this.ctx;if(c.resume)c.resume();
+ this.g=c.createGain();this.g.gain.value=0;this.g.connect(c.destination);
+ var ch=[[220,277.18,329.63],[196,246.94,293.66],[174.61,220,261.63],[164.81,207.65,246.94]];
+ var self=this,idx=0;this.osc=[];
+ for(var i=0;i<3;i++){var o=c.createOscillator();o.type='sine';
+ o.frequency.value=ch[0][i];o.connect(this.g);o.start();this.osc.push(o)}
+ function step(){var cc=ch[idx%ch.length];idx++;var t=c.currentTime;
+ self.g.gain.setTargetAtTime(0.05,t,2);
+ for(var i=0;i<3;i++){if(self.osc[i])self.osc[i].frequency.setTargetAtTime(cc[i],t,1.4)}}
+ step();this.iv=setInterval(step,15000);this.on=true;return true}catch(e){return false}},
+ stop:function(){try{if(this.iv)clearInterval(this.iv);this.iv=null;
+ this.osc.forEach(function(o){try{o.stop()}catch(e){}});this.osc=[];
+ if(this.g)this.g.gain.value=0;this.on=false}catch(e){}},
+ toggle:function(){if(this.on){this.stop();ls('webdl_music','0');toast('ambient sound off');
+ $('musicBtn').classList.remove('chip')}
+ else{if(this.start()){ls('webdl_music','1');toast('ambient sound on')}
+ else{toast('audio not available on this device')}}}}
+var pollT=null;
+function boot(){
 T.tok=ls('webdl_tok')||'';T.role=ls('webdl_role')||'';
 var sameOrigin=!location.hostname.endsWith('.github.io');
 T.api=sameOrigin?'':(ls('webdl_api')||'');
-if(!sameOrigin){fetch('backend.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.api&&d.api.indexOf('https://')===0){T.api=d.api;ls('webdl_api',T.api);view()}}).catch(function(){})}
-function applyTheme(){
-var c=ls('webdl_accent');
-if(c)document.documentElement.style.setProperty('--ac',c);
-document.body.classList.toggle('light',ls('webdl_theme')==='light');
+if(!sameOrigin){
+ fetch('backend.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null})
+ .then(function(d){if(d&&d.api&&d.api.indexOf('https://')===0){T.api=d.api;
+ ls('webdl_api',T.api)}view()}).catch(function(){view()})}
+else view();
+if(ls('webdl_music')==='1'){document.addEventListener('click',function once(){
+ document.removeEventListener('click',once);Amb.start()},{once:true})}
 }
-applyTheme();
-function setAnnounce(a){
-var t=(a||'').trim();
-['announce','announce2'].forEach(function(i){
-var el=$(i);if(!el)return;
-if(t){el.textContent=t;el.style.display='block'}
-else{el.style.display='none'}});
-}
-$('paste').onclick=function(){
-try{navigator.clipboard.readText().then(function(t){
-if(t){$('url').value=t.trim();$('url').focus()}
-}).catch(function(){})}catch(e){}};
-$('paste').oncontextmenu=function(){
-var t=prompt('Paste your link here:');if(t){$('url').value=t.trim()};return false};
-function loadHist(){
-if(!T.tok)return;
-api('/webdl/api/history').then(function(r){return r.json()})
-.then(function(d){
-if(!d||!d.ok)return;
-var h='';
-(d.history||[]).forEach(function(x){
-var dt=x.done_at?new Date(x.done_at*1000).toLocaleString():'';
-var st=x.status==='done'?'<span class="pill ok">done</span>':
-(x.status==='cancel'?'<span class="pill">cancelled</span>':
-'<span class="pill err">failed</span>');
-h+='<div class="hrow"><div style="flex:1;min-width:150px">'
-+esc(x.title||x.url)+'</div><div class="mut">'+esc(x.size||'')
-+' · '+esc(dt)+'</div>'+st
-+(x.alive?' <a class="btn sm pri" href="'+T.api+'/webdl/dl/'
-+encodeURIComponent(x.id)+'?auth='+encodeURIComponent(T.tok)
-+'" download style="text-decoration:none">again</a>':'')
-+'</div>'});
-$('hist').innerHTML=h||'nothing yet — your finished downloads appear here';
-}).catch(function(){})}
-$('chgPass').onclick=function(){
-if(!T.user){alert('guests have no password — this is for named accounts');return}
-var o=prompt('Current password:');if(!o)return;
-var n=prompt('New password (4+ characters):');if(!n)return;
-api('/webdl/api/pass',{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({old:o,new:n})}).then(function(r){return r.json()})
-.then(function(d){alert(d.ok?'password changed ✓':(d.error||'failed'))})
-.catch(function(){alert('backend unreachable')})};
-$('report').onclick=function(){
-var m=prompt('Describe the problem (the owner gets this on Telegram):');
-if(!m)return;
-api('/webdl/api/report',{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({msg:m,fp:fp(),dev:dev()})})
-.then(function(r){return r.json()})
-.then(function(d){alert(d.ok?'sent to the owner ✓ — thank you!':(d.error||'failed'))})
-.catch(function(){alert('backend unreachable')})};
 function view(){
-$('gear').style.display=(T.role==='o')?'':'none';
-var signed=!!T.tok;
-$('landing').classList.toggle('hide',signed);
-$('main').classList.toggle('hide',!signed);
-if(!signed){loadMeta()}
-else{refresh();if(T.role==='o'){admin()}}
+if(T.tok){go('s-app');refresh();loadHist();poll()}
+else{go('s-landing');loadMeta()}
+$('gearBtn').classList.toggle('hide',T.role!=='o');
 }
-function fp(){try{
-var c=document.createElement('canvas');var x=c.getContext('2d');
-x.textBaseline='top';x.font='14px Arial';x.fillStyle='#f60';
-x.fillRect(0,0,120,30);x.fillStyle='#069';x.fillText('wzfix-fp',2,15);
-var d=c.toDataURL();
-var s=[d.length,screen.width+'x'+screen.height,screen.colorDepth,
-navigator.language,(navigator.languages||[]).join(','),navigator.hardwareConcurrency||0,
-(Intl.DateTimeFormat().resolvedOptions().timeZone||''),(navigator.platform||'')].join('|');
-var h=0;for(var i=0;i<s.length;i++){h=((h*31)+s.charCodeAt(i))>>>0;}
-return 'f'+h.toString(16);
-}catch(e){return ''}}
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return'&#'+c.charCodeAt(0)+';'})}
 function loadMeta(){
 api('/webdl/api/meta').then(function(r){return r.json()}).then(function(d){
-if(!d||!d.ok){setTimeout(loadMeta,15000);return}
-$('conn').style.display='none';
-$('siteName').textContent=d.name||'WZ Web Downloader';
-document.title=(d.name||'WZ Web Downloader');
+if(!d||!d.ok){setTimeout(loadMeta,12000);return}
+T.meta=d;
+$('siteName').textContent=d.name||'Web Downloader';
+$('appName').textContent=d.name||'Downloader';
+document.title=d.name||'Web Downloader';
 $('stUsers').textContent=d.users>0?d.users:'–';
 $('stDls').textContent=d.downloads>0?d.downloads:'–';
 $('stLikes').textContent=d.likes>0?d.likes:'–';
 $('footVer').textContent='engine '+(d.version||'');
-$('guestRow').classList.toggle('hide',!d.guests);
 setAnnounce(d.announcement);
-if(d.theme&&!ls('webdl_accent')){
-document.documentElement.style.setProperty('--ac',d.theme)}
-$('maintBox').style.display=d.maintenance?'block':'none';
-if(d.contact){
-$('contactBox').classList.remove('hide');
-$('noContact').classList.add('hide');
-$('contactBtn').href='https://t.me/'+encodeURIComponent(d.contact);
-}
-if(d.liked){liked=true;likeUI()}
-}).catch(function(){setTimeout(loadMeta,15000)})
-}
-function likeUI(){
-$('likeBtn').textContent='❤ Liked';
-$('likeBtn').classList.add('on');
-$('likeBtn').disabled=true;
-}
-$('likeBtn').onclick=function(){
-if(liked)return;
-$('likeBtn').disabled=true;
-api('/webdl/api/like',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({dev:dev(),fp:fp()})}).then(function(r){return r.json()})
-.then(function(d){
-if(d&&d.ok){liked=true;likeUI();
-$('stLikes').textContent=(parseInt($('stLikes').textContent)||0)+1}
-else{$('likeBtn').disabled=false}
-}).catch(function(){$('likeBtn').disabled=false})
-};
-$('inviteToggle').onclick=function(){
-$('inviteBox').classList.toggle('hide')};
-$('go').onclick=login;
-$('pw').onkeydown=function(e){if(e.key==='Enter')login()};
-$('user').onkeydown=function(e){if(e.key==='Enter')login()};
-$('inviteGo').onclick=inviteLogin;
-function login(){
-$('pwErr').textContent='';$('go').disabled=true;
-var u=$('user').value.trim();
-var body;
-if(u){body={user:u,pass:$('pw').value,fp:fp(),dev:dev()}}
-else{body={pass:$('pw').value}}
-api('/webdl/api/login',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify(body)}).then(function(r){return r.json()})
-.then(function(d){$('go').disabled=false;
-if(d.token){T.tok=d.token;T.role=d.role;T.user=d.user||'';
+if(!ls('webdl_theme'))applyTheme(d.default_theme||'midnight');
+$('guestRow').classList.toggle('hide',!d.guests);
+if(d.music&&!ls('webdl_music')){ls('webdl_music','1')}
+if(d.contact){$('contactBox').classList.remove('hide');
+$('contactBtn').href='https://t.me/'+encodeURIComponent(d.contact)}
+if(d.maintenance&&T.role!=='o')showMaint(true);
+}).catch(function(){setTimeout(loadMeta,12000)})}
+function showMaint(on){
+$('maint').classList.toggle('hide',!on);
+if(on){['s-landing','s-app','s-settings'].forEach(function(i){$(i).classList.add('hide')})}}
+function refresh(){
+api('/webdl/api/state').then(function(r){return r.json()}).then(function(d){
+if(!d||!d.ok)return;
+T.st=d;T.role=d.role||T.role;T.user=d.user||T.user;
+if(d.role)ls('webdl_role',d.role);
+if(d.maintenance&&T.role!=='o'){showMaint(true);return}
+showMaint(false);
+$('gearBtn').classList.toggle('hide',T.role!=='o');
+var w=$('whoami'),q=$('quotaTxt'),b=$('qbar'),f=$('qfill');
+if(d.role==='o'){w.textContent='owner — unlimited everything';q.textContent='';
+b.classList.add('hide')}
+else{var me=d.me||{};
+ w.textContent=(d.user?('signed in as '+d.user):'guest')+
+ ((me.sub)?(' · '+me.sub):'');
+ var bits=[];
+ if(me.daily)bits.push(me.n+' of '+me.daily+' downloads today');
+ if(me.cap_gb)bits.push('files up to '+me.cap_gb+' GB');
+ if(me.bw_mb)bits.push((me.bw_used_mb||0)+' of '+me.bw_mb+' MB today');
+ q.textContent=bits.join(' · ');
+ if(me.daily){b.classList.remove('hide');
+  f.style.width=Math.min(100,Math.round(100*(me.n||0)/me.daily))+'%'}
+ else b.classList.add('hide')}
+var sl=d.slots||{};
+$('slotTxt').textContent=(d.role==='o')?'no slot limits':
+ (sl.used>=sl.total?('all '+sl.total+' busy — queued'):(sl.used+' of '+sl.total+' busy'));
+renderTasks(d.tasks||[]);
+}).catch(function(){})}
+function renderTasks(tasks){
+var h='';
+tasks.forEach(function(t){h+=taskHTML(t)});
+$('tasks').innerHTML=h||'<div class="card tight mut" style="text-align:center">'+
+'no downloads yet — paste a link above</div>'}
+function taskHTML(t){
+var st=t.status,pill='<span class="pill">'+esc(st)+'</span>';
+if(st==='done')pill='<span class="pill ok">ready</span>';
+if(st==='error')pill='<span class="pill err">failed</span>';
+if(st==='downloading'||st==='processing'||st==='queued')
+ pill='<span class="pill live">'+esc(st)+'</span>';
+var h='<div class="task"><div style="display:flex;justify-content:space-between;'+
+'gap:8px;align-items:flex-start"><div class="tname">'+esc(t.title)+'</div>'+pill+'</div>';
+if(st==='downloading'||st==='processing'){
+h+='<div class="bar"><i style="width:'+(t.pct||0)+'%"></i></div>'+
+'<div class="meta"><span>'+esc(String(t.pct||0))+'%'+(t.speed?' · '+esc(t.speed):'')+
+(t.eta?' · ETA '+esc(t.eta):'')+'</span><span>'+esc(t.size||'')+'</span></div>'}
+if(st==='queued')h+='<div class="hint">waiting for a free slot…</div>';
+if(t.pd_status==='uploading')h+='<div class="hint" style="margin-top:8px">☁ uploading to cloud — '+
+esc(String(t.pd_pct||0))+'%</div><div class="bar up"><i style="width:'+
+(t.pd_pct||0)+'%"></i></div>';
+if(t.error)h+='<div class="err">'+(t.why?'<div class="mut" style="margin-bottom:3px">'+
+esc(t.why)+'</div>':'')+esc(t.error)+'</div>';
+if(st==='done'&&t.pd)h+='<div style="margin-top:8px"><a class="btn pri wide" href="'+
+esc(t.pd)+'" target="_blank" rel="noopener" style="text-decoration:none">☁ Get from cloud</a></div>';
+if(st==='done'&&t.pd_status==='error')h+='<div class="hint">cloud upload failed — use Save below</div>';
+var row='';
+if(st==='done'){
+ if(t.locked&&T.role!=='o')row+='<button class="btn pri sm" data-act="dl" data-id="'+esc(t.id)+'">🔒 Enter password</button>';
+ else row+='<a class="btn pri sm" href="'+T.api+'/webdl/dl/'+encodeURIComponent(t.id)+
+  '?auth='+encodeURIComponent(T.tok)+'" download style="text-decoration:none">⬇ Save</a>';
+ if(t.sub_ready)row+='<a class="btn sm" href="'+T.api+'/webdl/dl/'+encodeURIComponent(t.id)+
+  '?auth='+encodeURIComponent(T.tok)+'&sub=1" download style="text-decoration:none">💬 Subs</a>';
+ if(T.role==='o'){
+  if(t.tg_ok){row+='<button class="btn sm" data-act="tg" data-id="'+esc(t.id)+'">'+
+   (t.tg==='sent'?'✓ sent':(t.tg==='sending'?'sending…':'✈ Telegram'))+'</button>'}
+  row+='<button class="btn sm" data-act="lock" data-id="'+esc(t.id)+'" data-locked="'+
+   (t.locked?1:0)+'">'+(t.locked?'🔓 unlock':'🔒 lock')+'</button>'}
+ row+='<button class="btn sm dng" data-act="clear" data-id="'+esc(t.id)+'">✕</button>'}
+if(st==='downloading'||st==='queued'||st==='processing')
+ row+='<button class="btn dng sm" data-act="cancel" data-id="'+esc(t.id)+'">Cancel</button>';
+if(row)h+='<div style="margin-top:9px;display:flex;gap:7px;flex-wrap:wrap">'+row+'</div>';
+return h+'</div>'}
+function loadHist(){
+if(!T.tok)return;
+api('/webdl/api/history').then(function(r){return r.json()}).then(function(d){
+if(!d||!d.ok)return;var h='';
+(d.history||[]).forEach(function(x){
+var dt=x.done_at?new Date(x.done_at*1000).toLocaleString():'';
+var st=x.status==='done'?'<span class="pill ok">done</span>':
+(x.status==='cancel'?'<span class="pill">cancelled</span>':'<span class="pill err">failed</span>');
+h+='<div class="hrow"><div style="flex:1;min-width:130px">'+esc(x.title||x.url)+
+'</div><div class="mut">'+esc(x.size||'')+' · '+esc(dt)+'</div>'+st+
+(x.alive?' <a class="btn sm" href="'+T.api+'/webdl/dl/'+encodeURIComponent(x.id)+
+'?auth='+encodeURIComponent(T.tok)+'" download style="text-decoration:none">again</a>':'')+
+'</div>'});
+$('hist').innerHTML=h||'nothing yet'}).catch(function(){})}
+function poll(){clearTimeout(pollT);
+var ts=(T.st&&T.st.tasks)||[];
+var busy=ts.some(function(t){return ['queued','downloading','processing'].indexOf(t.status)>=0||
+t.pd_status==='uploading'});
+pollT=setTimeout(function(){refresh();poll()},busy?2000:7000)}
+var TABS=[['users','👤 Users'],['bans','🚫 Bans'],['guests','👥 Guests'],
+['site','🎨 Site'],['cloud','☁ Cloud'],['telegram','✈ Telegram'],
+['invites','🎟 Invites'],['disk','📦 Disk'],['history','🕐 History'],['tools','🔧 Tools']];
+function openSettings(){go('s-settings');loadAdm()}
+function loadAdm(){
+api('/webdl/api/admin/state').then(function(r){return r.json()}).then(function(d){
+if(!d||!d.ok){toast('settings unavailable');return}
+T.adm=d;drawTabs();drawTab()}).catch(function(){toast('backend unreachable')})}
+function drawTabs(){
+$('tabs').innerHTML=TABS.map(function(t){
+return '<button class="tab'+(t[0]===T.tab?' on':'')+'" data-act="tab" data-tab="'+t[0]+'">'+t[1]+'</button>'}).join('')}
+function drawTab(){
+var a=T.adm||{},g=a.globals||{},h='';
+if(T.tab==='users'){
+h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center">'+
+'<div class="tname">Accounts</div><button class="btn dng sm" data-act="unbanall">Unban ALL</button></div>';
+(a.accounts||[]).forEach(function(u){
+h+='<div class="urow"><b>'+esc(u.name)+'</b>'+
+(u.role==='s'?'<span class="pill">special</span>':'<span class="pill">member</span>')+
+'<span class="mut">'+esc(u.n)+'/day · '+esc(u.bw)+' MB'+(u.ip?' · '+esc(u.ip):'')+'</span>'+
+(u.banned?'<span class="pill err">banned</span>':'')+
+'<span class="mut">cap GB</span><input data-day="'+esc(u.name)+'" value="'+(u.daily||'')+
+'" placeholder="'+esc(u.daily||'def')+'">'+
+'<span class="mut">/day</span><input data-cap="'+esc(u.name)+'" value="'+(u.cap_gb||'')+
+'" placeholder="'+esc(u.cap_gb||'def')+'">'+
+'<button class="btn sm" data-act="ulim" data-name="'+esc(u.name)+'">set</button>'+
+'<button class="btn sm" data-act="uban" data-name="'+esc(u.name)+'" data-v="'+(u.banned?0:1)+'">'+
+(u.banned?'unban':'ban')+'</button>'+
+'<button class="btn sm" data-act="ures" data-name="'+esc(u.name)+'">reset device</button>'+
+'<button class="btn sm dng" data-act="udel" data-name="'+esc(u.name)+'">remove</button></div>'});
+h+=(a.accounts||[]).length?'':'<div class="mut">no accounts yet — add members via /ws</div>';
+h+='<div class="hint">cap GB + per-day are optional overrides; blank = default</div></div>';
+h+='<div class="card"><div class="tname">Member &amp; special limits</div><div class="grid2" style="margin-top:9px">'+
+'<div><div class="mut">member cap (GB)</div><input id="gVMax" value="'+esc(g.v_max_gb)+'"></div>'+
+'<div><div class="mut">member /day</div><input id="gVDaily" value="'+esc(g.v_daily)+'"></div>'+
+'<div><div class="mut">special cap (GB)</div><input id="gSMax" value="'+esc(g.s_max_gb)+'"></div>'+
+'<div><div class="mut">special /day</div><input id="gSDaily" value="'+esc(g.s_daily)+'"></div>'+
+'<div><div class="mut">member slots</div><input id="gMSlots" value="'+esc((a.slots||{}).member)+'"></div>'+
+'<div><div class="mut">guest slots</div><input id="gGSlots" value="'+esc((a.slots||{}).guest)+'"></div>'+
+'<div><div class="mut">guest cap (GB)</div><input id="gUserMax" value="'+esc(g.user_max_gb)+'"></div>'+
+'<div><div class="mut">guest /day</div><input id="gUserDaily" value="'+esc(g.user_daily)+'"></div>'+
+'<div><div class="mut">file TTL (h)</div><input id="gTtl" value="'+esc(g.ttl)+'"></div>'+
+'<div><div class="mut">disk max (GB)</div><input id="gMax" value="'+esc(g.max_gb)+'"></div>'+
+'<div><div class="mut">global MB/day</div><input id="gBwG" value="'+esc(g.bw_global_mb)+'"></div>'+
+'<div><div class="mut">user MB/day</div><input id="gBwU" value="'+esc(g.bw_user_mb)+'"></div>'+
+'</div><div style="margin-top:11px"><button class="btn pri" data-act="gsave">Save limits</button></div>'+
+'<div class="hint">owner is never counted in any slot or limit</div></div>'}
+if(T.tab==='bans'){
+var bans=(a.accounts||[]).filter(function(u){return u.banned});
+var gb=(a.users||[]).filter(function(u){return u.banned});
+h+='<div class="card"><div class="tname">Banned accounts</div>';
+bans.forEach(function(u){h+='<div class="urow"><b>'+esc(u.name)+'</b><span class="mut">'+
+esc(u.ip||'')+'</span><button class="btn sm" data-act="uban" data-name="'+esc(u.name)+
+'" data-v="1">unban</button></div>'});
+h+=bans.length?'':'<div class="mut">nobody is banned</div>';
+h+='</div><div class="card"><div class="tname">Banned guest devices</div>';
+gb.forEach(function(u){h+='<div class="urow"><span class="dev">'+esc(String(u.dev).slice(0,18))+
+'…</span><button class="btn sm" data-act="gban" data-dev="'+esc(u.dev)+'" data-v="1">unban</button>'+
+'<button class="btn sm dng" data-act="gdel" data-dev="'+esc(u.dev)+'">remove</button></div>'});
+h+=gb.length?'':'<div class="mut">no banned guests</div>';
+h+='<div style="margin-top:11px"><button class="btn dng" data-act="unbanall">Unban everyone</button></div></div>'}
+if(T.tab==='guests'){
+h+='<div class="card"><div class="tname">Guest devices</div>';
+(a.users||[]).forEach(function(u){
+if(String(u.dev||'').indexOf('u:')===0)return;
+h+='<div class="urow"><span class="dev">'+esc(String(u.dev).slice(0,16))+'…</span>'+
+'<span class="mut">'+esc(u.ip||'—')+' · '+u.n+'/day</span>'+
+'<input data-glim="'+esc(u.dev)+'" value="'+(u.limit_gb||'')+'" placeholder="cap GB">'+
+'<button class="btn sm" data-act="gset" data-dev="'+esc(u.dev)+'">set</button>'+
+(u.banned?'<span class="pill err">banned</span>':'')+
+'<button class="btn sm" data-act="gban" data-dev="'+esc(u.dev)+'" data-v="'+(u.banned?0:1)+'">'+
+(u.banned?'unban':'ban')+'</button>'+
+'<button class="btn sm dng" data-act="gdel" data-dev="'+esc(u.dev)+'">remove</button></div>'});
+h+=(a.users||[]).length?'':'<div class="mut">no guest devices yet</div>';
+h+='</div><div class="card"><div class="tname">Networks today</div>';
+(a.ips||[]).forEach(function(x){h+='<div class="hrow"><div>'+esc(x.ip)+'</div><div class="mut">'+
+x.n+' today</div></div>'});
+h+=(a.ips||[]).length?'':'<div class="mut">no activity</div>';h+='</div>'}
+if(T.tab==='site'){
+var st=a.site||{};
+h+='<div class="card"><div class="grid2">'+
+'<div><div class="mut">site name</div><input id="sName" value="'+esc(st.name||'')+'"></div>'+
+'<div><div class="mut">owner contact (telegram)</div><input id="sContact" value="'+esc(st.contact||'')+'"></div>'+
+'</div><div class="mut" style="margin:9px 0 4px">announcement banner</div>'+
+'<textarea id="sAnn" placeholder="e.g. magnet links now work!">'+esc(a.announcement||'')+'</textarea>'+
+'<div class="mut" style="margin:9px 0 4px">default theme</div>'+
+'<select id="sTheme">'+['midnight','ocean','sunset','forest','light'].map(function(x){
+return '<option value="'+x+'"'+(a.default_theme===x?' selected':'')+'>'+x+'</option>'}).join('')+'</select>'+
+'<div class="mut" style="margin:9px 0 4px">accent colour</div>'+
+'<input id="sAccent" type="color" value="'+(a.theme||'#7c5cff')+'" style="height:44px;padding:4px">'+
+'<div style="display:flex;gap:14px;margin-top:11px;flex-wrap:wrap">'+
+'<label class="tgl"><input type="checkbox" id="sMaint"'+(a.maintenance?' checked':'')+
+'>🛠 maintenance (owner only)</label>'+
+'<label class="tgl"><input type="checkbox" id="sGuests"'+((st.guests)?' checked':'')+
+'>guest downloads</label>'+
+'<label class="tgl"><input type="checkbox" id="sMusic"'+(a.music?' checked':'')+
+'>ambient music default</label>'+
+'<label class="tgl"><input type="checkbox" id="sNotify"'+(a.notify_done?' checked':'')+
+'>telegram ping on finish</label></div>'+
+'<div style="margin-top:11px"><button class="btn pri" data-act="ssave">Save site</button></div></div>'}
+if(T.tab==='cloud'){
+var pd=a.pixeldrain||{};
+h+='<div class="card"><div class="tname">☁ Pixeldrain</div>'+
+'<div class="hint">status: '+(pd.on?'<b>ON</b> — big files upload to your cloud':
+'<b>OFF</b> — set the API key via /ws')+'</div>'+
+'<div class="grid2" style="margin-top:9px">'+
+'<div><div class="mut">upload files over (GB)</div><input id="cLow" value="'+esc(pd.low_gb)+'"></div>'+
+'<div><div class="mut">up to (GB)</div><input id="cHigh" value="'+esc(pd.high_gb)+'"></div></div>'+
+'<div style="margin-top:11px"><button class="btn pri" data-act="csave">Save cloud</button></div>'+
+'<div class="hint">files in this range skip the direct link and go to the cloud, '+
+'so they still work after the bot sleeps.</div></div>'}
+if(T.tab==='telegram'){
+var tg=a.tg||{};
+h+='<div class="card"><div class="tname">✈ Telegram routing</div>'+
+'<div class="hrow"><div>logs group</div><div class="mut">'+esc(tg.logs_set||'(not set)')+'</div></div>'+
+'<div class="hrow"><div>files group</div><div class="mut">'+esc(tg.files_set||'(not set)')+'</div></div>'+
+(tg.err?'<div class="err">last error: '+esc(tg.err)+'</div>':'<div class="hint">no recent send errors</div>')+
+'<div class="hint">group ids are set via /ws (Telegram logs group / Telegram files group). '+
+'The bot must be an admin in both groups.</div>'+
+'<div style="margin-top:11px"><button class="btn pri" data-act="tgtest">Send test messages</button></div>'+
+'<div id="tgOut" class="hint"></div></div>'}
+if(T.tab==='invites'){
+h+='<div class="card"><div class="tname">🎟 Invite codes</div>'+
+'<div style="display:flex;gap:9px;margin-top:9px;align-items:center">'+
+'<input id="invN" type="number" value="3" min="1" max="20" style="width:80px">'+
+'<button class="btn sm pri" data-act="invmake">Generate</button></div>'+
+'<div id="invOut" class="hint"></div>';
+(a.invites||[]).forEach(function(x){
+h+='<div class="hrow"><div><b>'+esc(x.code||'(old code)')+'</b></div>'+
+(x.used?'<span class="pill err">used'+(x.used_by?' by '+esc(x.used_by):'')+'</span>':
+'<span class="pill ok">free</span>')+
+(x.code&&!x.used?' <button class="btn sm dng" data-act="invdel" data-code="'+esc(x.code)+
+'">delete</button>':'')+'</div>'});
+h+=(a.invites||[]).length?'':'<div class="mut">no codes yet</div>';h+='</div>'}
+if(T.tab==='disk'){
+h+='<div class="card"><div class="tname">📦 Files on disk</div>'+
+'<div class="hint">'+((a.disk||[]).length)+' files · budget '+(g.max_gb||'?')+' GB</div>';
+(a.disk||[]).forEach(function(x){
+h+='<div class="hrow"><div style="flex:1;min-width:120px">'+esc(x.file||x.id)+
+'</div><div class="mut">'+esc(x.size)+'</div><div class="mut">'+esc(x.status)+'</div>'+
+'<button class="btn sm dng" data-act="diskdel" data-id="'+esc(x.id)+'">delete</button></div>'});
+h+='<div style="margin-top:11px"><button class="btn dng" data-act="wipe">Delete all finished files</button></div></div>'}
+if(T.tab==='history'){
+h+='<div class="card"><div class="tname">🕐 Recent downloads</div><div class="hint">today: '+
+(a.today_downloads||0)+' · total: '+(a.dl_total||0)+' · likes: '+(a.likes||0)+'</div>';
+(a.history||[]).forEach(function(x){
+var who=x.dev?(String(x.dev).indexOf('u:')===0?esc(String(x.dev).slice(2)):'guest'):'—';
+h+='<div class="hrow"><div style="flex:1;min-width:110px">'+esc(x.title||x.url)+
+'</div><div class="mut">'+who+'</div><div class="mut">'+esc(x.size||'')+
+'</div><div class="mut">'+esc(x.status)+'</div></div>'});
+h+=(a.history||[]).length?'':'<div class="mut">nothing yet</div>';h+='</div>'}
+if(T.tab==='tools'){
+h+='<div class="card"><div class="tname">🔧 Tools</div>'+
+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px">'+
+'<button class="btn sm" data-act="cktest">Test YouTube cookies</button>'+
+'<button class="btn sm" data-act="reload">Reload settings</button>'+
+'<button class="btn sm" data-act="ownpass">Change owner password</button></div>'+
+'<div id="toolOut" class="hint"></div>'+
+'<div class="hint" style="margin-top:9px">cookies: '+(a.yt_cookies?'set ✓':'not set')+'</div></div>'}
+$('tabBody').innerHTML=h}
+function loginFail(m){$('loginErr').textContent=m||'could not sign in'}
+function afterLogin(d){T.tok=d.token;T.role=d.role;T.user=d.user||'';
 ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
-else{$('pwErr').textContent=(d.why?d.why+' — ':'')+(d.error||'could not sign in')}})
-.catch(function(){$('go').disabled=false;
-$('pwErr').textContent='cannot reach the backend'})}
-function inviteLogin(){
-$('pwErr').textContent='';$('inviteGo').disabled=true;
-api('/webdl/api/login',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({invite:$('inviteCode').value.trim(),
-user:$('user').value.trim(),pass:$('pw').value,fp:fp(),dev:dev()})})
-.then(function(r){return r.json()})
-.then(function(d){$('inviteGo').disabled=false;
-if(d.token){T.tok=d.token;T.role=d.role;T.user=d.user||'';
-ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
-else{$('pwErr').textContent=d.error||'invalid invite code'}})
-.catch(function(){$('inviteGo').disabled=false;
-$('pwErr').textContent='cannot reach the backend'})}
-$('guest').onclick=function(){
-$('pwErr').textContent='';$('guest').disabled=true;
-api('/webdl/api/login',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({guest:1,dev:dev(),fp:fp()})}).then(function(r){return r.json()})
-.then(function(d){$('guest').disabled=false;
-if(d.token){T.tok=d.token;T.role=d.role;T.user='';
-ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
-else{$('pwErr').textContent=(d.why?d.why+' — ':'')+(d.error||'could not start guest session')}})
-.catch(function(){$('guest').disabled=false;
-$('pwErr').textContent='cannot reach the backend'})};
-$('signout').onclick=function(){T.tok='';T.role='';T.user='';
-ls('webdl_tok','');ls('webdl_role','');location.reload()};
 var FMT=null;
-$('fetch').onclick=function(){
+function startDl(audio){
+if(!FMT){$('urlErr').textContent='check the link first';return}
+var b={url:FMT.url||$('url').value.trim(),mode:audio?'audio':'video'};
+if(!audio)b.fmt=($('custom')||{}).value||'bv*+ba/b';
+b.subs=($('subs')&&$('subs').checked)?1:0;
+b.name=audio?'':(($('fname')||{}).value||'');
+post('/webdl/api/start',b).then(function(d){
+if(d.ok){$('pick').classList.add('hide');toast('download started');refresh();poll()}
+else{$('urlErr').textContent=d.error||'could not start'}})}
+function doFetch(audioOnly){
 var u=$('url').value.trim();$('urlErr').textContent='';
 if(!u){$('urlErr').textContent='paste a link first';return}
-var mag=u.indexOf('magnet:')===0||u.toLowerCase().indexOf('.torrent')===u.length-8;
-if(mag){FMT={url:u,title:'Torrent download',formats:[]};
-$('pick').classList.remove('hide');
-$('thumb').classList.add('hide');
-$('metaTitle').textContent='Torrent';
-$('metaSub').textContent='magnet / torrent file';
-$('fmts').innerHTML='<div class="mut">torrents download with the same engine as the bot — pick a button below</div>';
+if(audioOnly){FMT={url:u,mode:'audio'};startDl(true);return}
+var mag=u.indexOf('magnet:')===0||u.slice(-8).toLowerCase()==='.torrent';
+if(mag){FMT={url:u};$('pick').classList.remove('hide');$('thumb').classList.add('hide');
+$('metaTitle').textContent='Torrent';$('metaSub').textContent='magnet / torrent file';
+$('fmts').innerHTML='<div class="mut">downloads with the same engine as the bot — tap Download below</div>';
 $('custom').value='';return}
-$('fetch').disabled=true;$('fetch').textContent='Checking…';
-api('/webdl/api/formats',{method:'POST',
-headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u})})
-.then(function(r){return r.json()}).then(function(d){
-$('fetch').disabled=false;$('fetch').textContent='Get formats';
+$('urlErr').textContent='reading…';
+post('/webdl/api/formats',{url:u}).then(function(d){
+$('urlErr').textContent='';
 if(!d.ok){$('urlErr').textContent=(d.why?d.why+' — ':'')+(d.error||'could not read that link');return}
 FMT=d;$('pick').classList.remove('hide');
 if(d.thumbnail){$('thumb').src=d.thumbnail;$('thumb').classList.remove('hide')}
+else $('thumb').classList.add('hide');
 $('metaTitle').textContent=d.title||u;
-$('metaSub').textContent=(d.extractor||'')+(d.duration?
-' · '+d.duration:'');
-var box=$('fmts');box.innerHTML='';
-var def=null;
+$('metaSub').textContent=(d.extractor||'')+(d.duration?' · '+d.duration:'');
+var box=$('fmts');box.innerHTML='';var def=null;
 if((d.formats||[]).some(function(i){return i.vid})){
-var bb=document.createElement('div');bb.className='fmt';
-var bl=document.createElement('div');
-bl.textContent='Best available (recommended)';
-var bs=document.createElement('span');bs.className='sz';bs.textContent='';
-bb.appendChild(bl);bb.appendChild(bs);
-bb.onclick=function(){box.querySelectorAll('.fmt').forEach(
-function(x){x.classList.remove('on')});bb.classList.add('on');
-$('custom').value=''};
-box.appendChild(bb);def=bb;}
+var b=document.createElement('div');b.className='fmt';
+b.innerHTML='<div>Best available (recommended)</div><span class="sz"></span>';
+b.onclick=function(){box.querySelectorAll('.fmt').forEach(function(x){x.classList.remove('on')});
+b.classList.add('on');$('custom').value=''};box.appendChild(b);def=b}
 (d.formats||[]).forEach(function(i){
-var d1=document.createElement('div');d1.className='fmt';
-var lab=document.createElement('div');lab.textContent=i.label;
-var sz=document.createElement('span');sz.className='sz';
-sz.textContent=i.size||'';
-d1.appendChild(lab);d1.appendChild(sz);
-d1.onclick=function(){box.querySelectorAll('.fmt').forEach(function(x){
-x.classList.remove('on')});d1.classList.add('on');$('custom').value=i.fmt||''};
-box.appendChild(d1)});
-if(def)def.click();
-}).catch(function(){$('fetch').disabled=false;
-$('fetch').textContent='Get formats';
-$('urlErr').textContent='backend unreachable'})};
-$('audio').onclick=start.bind(null,true);
-$('start').onclick=start.bind(null,false);
-function start(audio){
-if(!FMT)return;
-var body={url:FMT.url||$('url').value.trim(),mode:audio?'audio':'video'};
-if(!audio)body.fmt=$('custom').value.trim()||'bv*+ba/b';
-body.subs=$('subs').checked?1:0;
-body.name=audio?'':$('fname').value.trim();
-api('/webdl/api/start',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify(body)}).then(function(r){return r.json()})
-.then(function(d){
-if(d.ok){$('pick').classList.add('hide');refresh()}
-else{$('urlErr').textContent=d.error||'could not start'}})
-.catch(function(){$('urlErr').textContent='backend unreachable'})}
-function refresh(){
-api('/webdl/api/state').then(function(r){return r.json()})
-.then(function(d){$('conn').style.display='none';
-if(!d.ok)return;
-T.role=d.role||T.role;T.user=d.user||T.user;
-if(d.role)ls('webdl_role',d.role);
-var sub=$('subline');
-if(d.role==='o')sub.textContent='owner mode — no limits';
-else if(d.user)sub.textContent='signed in as '+d.user+' ('+(d.me.sub||'member')+') · '+
-(d.me.n+' of '+d.me.daily+' downloads used today');
-else if(d.me)sub.textContent=(d.me.banned?
-'this device is banned':
-'guest · '+d.me.n+' of '+d.me.daily+' downloads used today');
-if(d.me&&!d.me.banned&&d.me.daily){
-var qp=Math.min(100,Math.round(100*(d.me.n||0)/d.me.daily));
-$('qbar').classList.remove('hide');$('qfill').style.width=qp+'%';
-var cap=d.me.cap_gb?(' · files up to '+d.me.cap_gb+' GB'):'';
-var bwl=d.me.bw_mb?(' · '+(d.me.bw_used_mb||0)+' of '+d.me.bw_mb+' MB today'):'';
-sub.textContent+=cap+bwl;
-}
-if(d.slots){$('slots').textContent=d.slots.used>=d.slots.total?
-'all '+d.slots.total+' slots busy — your download is queued':
-(d.slots.used+' of '+d.slots.total+' download slots busy')}
-if(d.maintenance)$('maintBox').style.display='block';
-var h='';
-(d.tasks||[]).forEach(function(t){
-var st=t.status,pc='';
-if(st==='downloading')pc='<div class="bar"><i style="width:'
-+(t.pct||0)+'%"></i></div><div class="meta"><span>'+(t.pct||0)+'%'
-+(t.speed?' · '+t.speed:'')+(t.eta?' · ETA '+t.eta:'')
-+'</span><span>'+(t.size||'')+'</span></div>';
-var pill='<span class="pill">'+st+'</span>';
-if(st==='done')pill='<span class="pill ok">ready</span>';
-if(st==='error')pill='<span class="pill err">failed</span>';
-h+='<div class="task"><div style="display:flex;justify-content:'
-+'space-between;gap:8px"><div class="tname">'+esc(t.title)
-+'</div>'+pill+'</div>'+pc;
-if(t.error)h+='<div class="err">'+(t.why?'<div class="mut" style="margin-bottom:3px">'+esc(t.why)+'</div>':'')+esc(t.error)+'</div>';
-if(st==='done'&&t.pd)h+='<div style="margin-top:8px"><a class="btn pri" href="'+esc(t.pd)+'" target="_blank" rel="noopener" style="text-decoration:none;width:100%">☁ Get from Pixeldrain</a><div class="mut" style="margin-top:4px">big file — hosted on the cloud</div></div>';
-if(st==='done'&&t.pd_status==='uploading')h+='<div class="mut" style="margin-top:8px">☁ uploading to the cloud — the link appears here soon</div>';
-if(st==='done'&&t.pd_status==='error')h+='<div class="mut" style="margin-top:8px">cloud upload failed ('+esc(t.pd_err||'?')+') — use Save to device</div>';
-if(st==='done'&&t.sub_ready)h+='<a class="dl btn" href="'+T.api+'/webdl/dl/'
-+encodeURIComponent(t.id)+'?auth='+encodeURIComponent(T.tok)+'&sub=1" download>💬 Get subtitles</a>';
-if(st==='done'&&t.tg_ok&&d.tg_allowed){
-if(t.tg==='sending')h+='<button class="btn" disabled>sending…</button>';
-else if(t.tg==='sent')h+='<button class="btn" disabled>&#9980 sent ✓</button>';
-else h+='<button class="btn pri" data-tg="'+esc(t.id)+'">&#9980 Send to Telegram</button>';}
-if(st==='done')h+='<a class="dl btn pri" href="'+T.api+'/webdl/dl/'
-+encodeURIComponent(t.id)+'?auth='+encodeURIComponent(T.tok)
-+'" download>⬇ Save to device</a>';
-if(st==='downloading'||st==='queued'||st==='processing')
-h+='<div style="margin-top:8px"><button class="btn dng" data-cancel="'
-+esc(t.id)+'">Cancel</button></div>';
-h+='</div>'});
-$('tasks').innerHTML=h||'<div class="mut" style="text-align:center;padding:10px">no downloads yet</div>';
-$('tasks').querySelectorAll('[data-tg]').forEach(function(b){
-b.onclick=function(){api('/webdl/api/tg',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({id:b.getAttribute('data-tg')})}).then(refresh)}});
-$('tasks').querySelectorAll('[data-cancel]').forEach(function(b){
-b.onclick=function(){api('/webdl/api/cancel',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({id:b.getAttribute('data-cancel')})}).then(refresh)}});
-if((d.tasks||[]).some(function(t){return t.status==='done'}))loadHist();
-}).catch(function(){});
-}
-$('gear').onclick=function(){
-if(T.role!=='o')return;
-var s=$('admin');s.classList.toggle('hide')};
-function admin(){
-if(T.role!=='o')return;
-api('/webdl/api/admin/state').then(function(r){return r.json()})
-.then(function(d){
-if(!d.ok)return;
-var g=d.globals||{};
-$('gVMax').value=g.v_max_gb;$('gVDaily').value=g.v_daily;
-$('gSMax').value=g.s_max_gb;$('gSDaily').value=g.s_daily;
-$('gUserMax').value=g.user_max_gb;$('gUserDaily').value=g.user_daily;
-$('gTtl').value=g.ttl;$('gMax').value=g.max_gb;$('gConc').value=g.conc;
-$('gBwG').value=g.bw_global_mb;$('gBwU').value=g.bw_user_mb;
-$('ckInfo').textContent=d.yt_cookies?
-'YouTube cookies: set (sent via /ws)':
-'YouTube cookies: none — age/login-locked videos will fail. Send cookies.txt via /ws';
-var st=d.site||{};
-$('sName').value=st.name||'';$('sContact').value=st.contact||'';
-$('sTheme').value=st.theme||'#7c5cff';
-$('sAnn').value=st.announcement||'';
-$('sMaint').checked=!!d.maintenance;$('sGuests').checked=!!st.guests;
-var pd=d.pixeldrain||{};
-$('sPdLow').value=pd.low_gb||2;$('sPdHigh').value=pd.high_gb||4;
-$('pdInfo').textContent=pd.on?
-('ON — files between '+pd.low_gb+' and '+pd.high_gb+' GB upload to the cloud'):
-'OFF — set the API key via /ws to enable the big-file cloud route';
-var ah='';
-(d.accounts||[]).forEach(function(u){
-ah+='<div class="urow"><b>'+esc(u.name)+'</b>'
-+(u.role==='s'?' <span class="pill">special</span>':' <span class="pill">member</span>')
-+' '+esc(u.n)+'/day · '+esc(u.bw)+' MB'
-+(u.ip?' · '+esc(u.ip):'')
-+(u.banned?' <span class="pill err">banned</span>':'')
-+' <span class="pill warn">limit/day</span>'
-+' <input data-day="'+esc(u.name)+'" value="'+(u.daily||'')+'" placeholder="'+esc(u.daily||'dflt')+'" style="width:54px">'
-+' <span class="pill warn">cap GB</span>'
-+' <input data-cap="'+esc(u.name)+'" value="'+(u.cap_gb||'')+'" placeholder="'+esc(u.cap_gb||'dflt')+'" style="width:54px">'
-+' <button class="btn sm" data-ulim="'+esc(u.name)+'">set</button>'
-+' <button class="btn sm" data-aban="'+esc(u.name)+'" data-v="'+(u.banned?0:1)+'">'
-+(u.banned?'unban':'ban')+'</button>'
-+' <button class="btn sm" data-ares="'+esc(u.name)+'">reset device</button>'
-+' <button class="btn sm dng" data-adel="'+esc(u.name)+'">remove</button>'
-+'</div>'});
-$('accounts').innerHTML=ah||'<div class="mut">no accounts yet — create them via /ws</div>';
-$('accounts').querySelectorAll('[data-aban]').forEach(function(b){
-b.onclick=function(){api('/webdl/api/admin/user',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({user:b.getAttribute('data-aban'),
-banned:b.getAttribute('data-v')==='1'})}).then(admin)}});
-$('accounts').querySelectorAll('[data-ares]').forEach(function(b){
-b.onclick=function(){api('/webdl/api/admin/user',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({user:b.getAttribute('data-ares'),reset_dev:1})}).then(admin)}});
-$('accounts').querySelectorAll('[data-adel]').forEach(function(b){
-b.onclick=function(){if(!confirm('remove '+b.getAttribute('data-adel')+'?'))return;
-api('/webdl/api/admin/user',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({user:b.getAttribute('data-adel'),del:1})}).then(admin)}});
-$('accounts').querySelectorAll('[data-ulim]').forEach(function(b){
-var nm=b.getAttribute('data-ulim');
-var dv=$('accounts').querySelector('input[data-day="'+nm+'"]');
-var cv=$('accounts').querySelector('input[data-cap="'+nm+'"]');
-b.onclick=function(){
-var o={user:nm};
-var dvv=dv.value.trim();var cvv=cv.value.trim();
-o.daily=dvv===''?null:(parseInt(dvv)||0);
-o.cap_gb=cvv===''?null:(parseFloat(cvv)||0);
-api('/webdl/api/admin/user',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify(o)}).then(admin)}});
-var h='';
-(d.users||[]).forEach(function(u){
-if(String(u.dev||'').indexOf('u:')===0)return;
-h+='<div class="urow"><span class="dev">'+esc(String(u.dev).slice(0,16))+'…'
-+'</span><span>'+esc(u.ip||'—')+'</span><span>'+u.n+'/day</span>'
-+'<input data-lim="'+esc(u.dev)+'" value="'+(u.limit_gb||'')+'" placeholder="'+esc(u.limit_gb||'')+'" style="width:54px">'
-+(u.banned?' <span class="pill err">banned</span>':'')
-+' <button class="btn sm" data-ban="'+esc(u.dev)+'" data-banned="'+(u.banned?1:0)+'">'
-+(u.banned?'unban':'ban')+'</button>'
-+' <button class="btn sm dng" data-gdel="'+esc(u.dev)+'">remove</button></div>'});
-$('users').innerHTML=h||'<div class="mut">no guests yet</div>';
-$('users').querySelectorAll('[data-ban]').forEach(function(b){
-b.onclick=function(){api('/webdl/api/admin/user',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({dev:b.getAttribute('data-ban'),
-banned:b.getAttribute('data-banned')!=='1'})}).then(admin)}});
-$('users').querySelectorAll('[data-lim]').forEach(function(b){
-b.onchange=function(){
-api('/webdl/api/admin/user',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({dev:b.getAttribute('data-lim'),
-limit_gb:parseFloat(b.value)||0})}).then(admin)}});
-$('users').querySelectorAll('[data-gdel]').forEach(function(b){
-b.onclick=function(){if(!confirm('remove this guest device?'))return;
-api('/webdl/api/admin/user',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({dev:b.getAttribute('data-gdel'),del:1})}).then(admin)}});
-var ih='<div class="mut" style="margin:8px 0 4px">networks today</div>';
-(d.ips||[]).forEach(function(x){
-ih+='<div class="hrow"><div>'+esc(x.ip)+'</div><div>'+x.n+' today</div></div>'});
-$('users').innerHTML+=ih;
-var dh='';
-(d.disk||[]).forEach(function(x){
-dh+='<div class="hrow"><div style="flex:1;min-width:120px">'+esc(x.file||x.id)
-+'</div><div class="mut">'+esc(x.size)+'</div><div class="mut">'
-+esc(x.status)+'</div>'
-+'<button class="btn sm dng" data-diskdel="'+esc(x.id)+'">delete</button></div>'});
-$('diskList').innerHTML=dh||'<div class="mut">no files on disk</div>';
-var tot=0;(d.disk||[]).forEach(function(x){tot+=x.size_b||0});
-$('diskSum').textContent=(d.disk||[]).length+' files · '
-+(Math.round(tot/1048576))+' MB of '+(g.max_gb||'?')+' GB budget used';
-$('diskList').querySelectorAll('[data-diskdel]').forEach(function(b){
-b.onclick=function(){api('/webdl/api/admin/disk',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({id:b.getAttribute('data-diskdel')})}).then(admin)}});
-var hh='';
-((d.history||[]).slice(0,25)).forEach(function(x){
-var dt=x.done_at?new Date(x.done_at*1000).toLocaleString():'';
-var who=x.dev?(String(x.dev).indexOf('u:')===0?esc(String(x.dev).slice(2)):'guest'):'—';
-hh+='<div class="hrow"><div style="flex:1;min-width:130px">'+esc(x.title||x.url)
-+'</div><div class="mut">'+who+'</div><div class="mut">'+esc(x.size||'')
-+'</div><div class="mut">'+esc(x.status)+'</div><div class="mut">'+esc(dt)+'</div></div>'});
-$('histList').innerHTML=hh||'<div class="mut">nothing yet</div>';
-$('todayLine').textContent='today: '+(d.today_downloads||0)+' downloads · total: '
-+(d.dl_total||0)+' · likes: '+(d.likes||0);
-var iv='';
-(d.invites||[]).forEach(function(x){
-iv+='<div class="hrow"><div><b>'+esc(x.code||'(old code)')+'</b></div>'
-+(x.used?'<span class="pill err">used'+(x.used_by?' by '+esc(x.used_by):'')+'</span>'
-:'<span class="pill ok">unused</span>')
-+(x.code&&!x.used?' <button class="btn sm dng" data-invdel="'+esc(x.code)+'">delete</button>':'')
-+'</div>'});
-$('invList').innerHTML=iv||'<div class="mut">no invite codes yet</div>';
-$('invList').querySelectorAll('[data-invdel]').forEach(function(b){
-b.onclick=function(){api('/webdl/api/admin/invites',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({del:b.getAttribute('data-invdel')})}).then(admin)}});
-$('acts').textContent=(d.events||[]).join('\n')||'nothing yet';
-}).catch(function(){})}
-$('unbanAll').onclick=function(){
-$('unbanAll').disabled=true;
-api('/webdl/api/admin/unban_all',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({})}).then(function(r){return r.json()})
-.then(function(d){$('unbanAll').disabled=false;
-alert(d.ok?('unbanned '+(d.count||0)+' users'):'failed');admin()})
-.catch(function(){$('unbanAll').disabled=false})};
-$('gSave').onclick=function(){
-$('gMsg').textContent='';
-api('/webdl/api/admin/globals',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({v_max_gb:parseFloat($('gVMax').value)||0,
-v_daily:parseInt($('gVDaily').value)||0,
-s_max_gb:parseFloat($('gSMax').value)||0,
-s_daily:parseInt($('gSDaily').value)||0,
-user_max_gb:parseFloat($('gUserMax').value)||0,
-user_daily:parseInt($('gUserDaily').value)||0,
-ttl:parseFloat($('gTtl').value)||0,
-max_gb:parseFloat($('gMax').value)||0,
-conc:parseInt($('gConc').value)||0,
-bw_global_mb:parseFloat($('gBwG').value)||0,
-bw_user_mb:parseFloat($('gBwU').value)||0})})
-.then(function(r){return r.json()}).then(function(d){
-$('gMsg').textContent=d.ok?'saved ✓':'failed';
-setTimeout(function(){$('gMsg').textContent=''},3000);admin()})
-.catch(function(){$('gMsg').textContent='failed'})};
-$('sSave').onclick=function(){
-$('sMsg').textContent='';
-api('/webdl/api/admin/site',{method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({site_name:$('sName').value,owner_contact:$('sContact').value,
-theme:$('sTheme').value,announcement:$('sAnn').value,
-maintenance:$('sMaint').checked,guest_mode:$('sGuests').checked,
-pd_low_gb:parseFloat($('sPdLow').value)||0,pd_high_gb:parseFloat($('sPdHigh').value)||0})})
-.then(function(r){return r.json()}).then(function(d){
-if(d.ok){document.documentElement.style.setProperty('--ac',$('sTheme').value);
-ls('webdl_accent',$('sTheme').value);
-$('sMsg').textContent='saved ✓ — everyone sees it instantly'}
-else{$('sMsg').textContent='failed'}
-setTimeout(function(){$('sMsg').textContent=''},4000);admin()})
-.catch(function(){$('sMsg').textContent='failed'})};
-$('invMake').onclick=function(){
-var n=Math.max(1,Math.min(20,parseInt($('invN').value)||1));
-$('invMake').disabled=true;
-api('/webdl/api/admin/invites',{method:'POST',
-headers:{'Content-Type':'application/json'},body:JSON.stringify({make:n})})
-.then(function(r){return r.json()}).then(function(d){
-$('invMake').disabled=false;
-if(d.ok&&(d.codes||[]).length){
-alert('invite codes created:\n\n'+d.codes.join('\n')+'\n\nsend each code to one person — one-time use')}
-else{alert('failed')}
-admin()}).catch(function(){$('invMake').disabled=false})};
-$('wipeDone').onclick=function(){
-if(!confirm('delete ALL finished files from disk?'))return;
-api('/webdl/api/admin/disk',{method:'POST',
-headers:{'Content-Type':'application/json'},body:JSON.stringify({wipe:1})})
-.then(function(r){return r.json()}).then(function(d){
-alert(d.ok?('freed '+(d.freed_mb||0)+' MB'):'failed');admin()})
-.catch(function(){alert('failed')})};
-$('ckTest').onclick=function(){
-$('toolMsg').textContent='testing cookies… (up to 90 s)';
-$('ckTest').disabled=true;
-api('/webdl/api/admin/cookie_test',{method:'POST',
-headers:{'Content-Type':'application/json'},body:JSON.stringify({})})
-.then(function(r){return r.json()}).then(function(d){
-$('ckTest').disabled=false;
-$('toolMsg').textContent=d.ok?'✓ '+(d.msg||'works'):
-('✗ '+(d.error||'failed'))}).catch(function(){
-$('ckTest').disabled=false;$('toolMsg').textContent='failed'})};
-$('reload').onclick=function(){
-api('/webdl/api/admin/reload',{method:'POST',
-headers:{'Content-Type':'application/json'},body:JSON.stringify({})})
-.then(function(r){return r.json()}).then(function(d){
-$('toolMsg').textContent=d.ok?'settings reloaded ✓':'failed';
-setTimeout(function(){$('toolMsg').textContent=''},3000)})
-.catch(function(){$('toolMsg').textContent='failed'})};
-$('ownPass').onclick=function(){
-var n=prompt('new owner password (4+ chars):');if(!n)return;
-api('/webdl/api/admin/pass',{method:'POST',
-headers:{'Content-Type':'application/json'},body:JSON.stringify({new:n})})
-.then(function(r){return r.json()}).then(function(d){
-alert(d.ok?'owner password changed ✓':(d.error||'failed'))})
-.catch(function(){alert('failed')})};
-view();
+var e=document.createElement('div');e.className='fmt';
+e.innerHTML='<div>'+esc(i.label)+'</div><span class="sz">'+esc(i.size||'')+'</span>';
+e.onclick=function(){box.querySelectorAll('.fmt').forEach(function(x){x.classList.remove('on')});
+e.classList.add('on');$('custom').value=i.fmt||''};box.appendChild(e)});
+if(def)def.click()})}
+var ACT={
+'login':function(){$('loginErr').textContent='';
+var u=$('user').value.trim(),p=$('pw').value;
+var b=u?{user:u,pass:p,fp:fp(),dev:dev()}:{pass:p};
+post('/webdl/api/login',b).then(function(d){
+if(d.token)afterLogin(d);
+else if(d.maintenance)loginFail('maintenance mode — we will be back soon');
+else loginFail((d.why?d.why+' — ':'')+(d.error||'could not sign in'))})},
+'guest':function(){$('loginErr').textContent='';
+post('/webdl/api/login',{guest:1,dev:dev(),fp:fp()}).then(function(d){
+if(d.token)afterLogin(d);
+else if(d.maintenance)loginFail('maintenance mode — we will be back soon');
+else loginFail(d.error||'guests are off right now')})},
+'invite-toggle':function(){$('inviteBox').classList.toggle('hide')},
+'invite-go':function(){$('loginErr').textContent='';
+var code=$('invCode').value.trim(),u=$('invUser').value.trim(),p=$('invPass').value;
+if(!code)return loginFail('paste your invite code');
+if(!u||u.length<2)return loginFail('pick a username (2+ characters)');
+if(!p||p.length<4)return loginFail('pick a password (4+ characters)');
+post('/webdl/api/login',{invite:code,user:u,pass:p,fp:fp(),dev:dev()}).then(function(d){
+if(d.token)afterLogin(d);
+else if(d.maintenance)loginFail('maintenance mode — we will be back soon');
+else loginFail(d.error||'invalid invite code')})},
+'like':function(){$('likeBtn').disabled=true;
+post('/webdl/api/like',{dev:dev(),fp:fp()}).then(function(d){
+if(d&&d.ok){$('likeBtn').textContent='❤ Liked';$('likeBtn').disabled=true;
+$('stLikes').textContent=(parseInt($('stLikes').textContent)||0)+1}
+else $('likeBtn').disabled=false})},
+'paste':function(){try{navigator.clipboard.readText().then(function(t){
+if(t){$('url').value=t.trim();toast('pasted')}}).catch(function(){
+var t=prompt('Paste your link:');if(t)$('url').value=t.trim()})}catch(e){}},
+'fetch':function(){doFetch(false)},
+'quick-audio':function(){doFetch(true)},
+'start':function(){startDl(false)},
+'start-audio':function(){startDl(true)},
+'cancel':function(el){post('/webdl/api/cancel',{id:el.dataset.id}).then(function(){
+toast('cancelling');refresh()})},
+'clear':function(el){post('/webdl/api/clear',{id:el.dataset.id}).then(function(){
+toast('removed');refresh();loadHist()})},
+'tg':function(el){post('/webdl/api/tg',{id:el.dataset.id}).then(function(){
+toast('sending to telegram');refresh()})},
+'lock':function(el){var id=el.dataset.id,on=el.dataset.locked==='1';
+if(on){post('/webdl/api/protect',{id:id,pw:''}).then(function(d){
+toast(d.ok?'unlocked':'failed');refresh()});return}
+var p=prompt('set a password for this file (4+ characters):');if(!p)return;
+post('/webdl/api/protect',{id:id,pw:p}).then(function(d){
+toast(d.ok?'file locked':'failed');refresh()})},
+'dl':function(el){var p=prompt('this file is password-protected — enter the password:');
+if(!p)return;
+var url=T.api+'/webdl/dl/'+encodeURIComponent(el.dataset.id)+
+'?auth='+encodeURIComponent(T.tok)+'&pw='+encodeURIComponent(p);
+api(url).then(function(r){if(r.status===200)window.location=url;
+else toast('wrong password')})},
+'chgpass':function(){if(!T.user)return toast('guests have no password');
+var o=prompt('current password:');if(!o)return;
+var n=prompt('new password (4+ characters):');if(!n)return;
+post('/webdl/api/pass',{old:o,new:n}).then(function(d){
+toast(d.ok?'password changed ✓':(d.error||'failed'))})},
+'report':function(){var m=prompt('describe the problem (goes to the owner on telegram):');
+if(!m)return;post('/webdl/api/report',{msg:m,fp:fp(),dev:dev()}).then(function(d){
+toast(d.ok?'sent to the owner ✓':(d.error||'failed'))})},
+'signout':function(){T.tok='';T.role='';T.user='';ls('webdl_tok','');ls('webdl_role','');
+location.reload()},
+'theme':function(){var all=['midnight','ocean','sunset','forest','light'];
+var i=all.indexOf(T.theme);applyTheme(all[(i+1)%all.length]);toast('theme: '+T.theme)},
+'music':function(){Amb.toggle()},
+'settings':function(){openSettings()},
+'back':function(){go('s-app');refresh()},
+'totop':function(){window.scrollTo({top:0,behavior:'smooth'})},
+'tab':function(el){T.tab=el.dataset.tab;drawTabs();drawTab()},
+'recheck':function(){loadMeta();if(T.tok)refresh()},
+'gsave':function(){var g=function(i){var e=$(i);return e?e.value:0};
+var b={v_max_gb:parseFloat(g('gVMax'))||0,v_daily:parseInt(g('gVDaily'))||0,
+s_max_gb:parseFloat(g('gSMax'))||0,s_daily:parseInt(g('gSDaily'))||0,
+user_max_gb:parseFloat(g('gUserMax'))||0,user_daily:parseInt(g('gUserDaily'))||0,
+ttl:parseFloat(g('gTtl'))||0,max_gb:parseFloat(g('gMax'))||0,conc:parseInt(g('gConc'))||2,
+bw_global_mb:parseFloat(g('gBwG'))||0,bw_user_mb:parseFloat(g('gBwU'))||0,
+member_slots:parseInt(g('gMSlots'))||2,guest_slots:parseInt(g('gGSlots'))||2};
+post('/webdl/api/admin/globals',b).then(function(){toast('limits saved ✓');loadAdm()})},
+'ssave':function(){var v=function(i){var e=$(i);return e?e.value:''};
+var ck=function(i){var e=$(i);return !!(e&&e.checked)};
+var b={site_name:v('sName'),owner_contact:v('sContact'),announcement:v('sAnn'),
+default_theme:v('sTheme')||'midnight',theme:v('sAccent'),
+maintenance:ck('sMaint'),guest_mode:ck('sGuests'),music:ck('sMusic'),
+notify_done:ck('sNotify')};
+post('/webdl/api/admin/site',b).then(function(){
+toast('site saved ✓');if(b.default_theme)applyTheme(b.default_theme);loadAdm()})},
+'csave':function(){var lo=$('cLow'),hi=$('cHigh');
+var b={pd_low_gb:parseFloat(lo&&lo.value)||0,pd_high_gb:parseFloat(hi&&hi.value)||0};
+post('/webdl/api/admin/site',b).then(function(){toast('cloud window saved ✓');loadAdm()})},
+'tgtest':function(){$('tgOut').textContent='sending test messages…';
+post('/webdl/api/admin/tg_test',{}).then(function(d){
+var l=d.logs||{},f=d.files||{};
+$('tgOut').innerHTML='logs: '+(l.error?('<span style="color:var(--err)">'+esc(l.error)+'</span>'):
+'<span style="color:var(--ok)">delivered ✓</span>')+
+'<br>files: '+(f.error?('<span style="color:var(--err)">'+esc(f.error)+'</span>'):
+'<span style="color:var(--ok)">delivered ✓</span>')})},
+'invmake':function(){var n=Math.max(1,Math.min(20,parseInt($('invN').value)||1));
+post('/webdl/api/admin/invites',{make:n}).then(function(d){
+$('invOut').innerHTML=d.codes&&d.codes.length?
+('created: '+d.codes.map(function(c){return '<b>'+esc(c)+'</b>'}).join(', ')):'failed';
+loadAdm()})},
+'invdel':function(el){post('/webdl/api/admin/invites',{del:el.dataset.code}).then(function(){
+toast('code deleted');loadAdm()})},
+'diskdel':function(el){post('/webdl/api/admin/disk',{id:el.dataset.id}).then(function(d){
+toast('freed '+(d.freed_mb||0)+' MB');loadAdm()})},
+'wipe':function(){if(!confirm('delete ALL finished files?'))return;
+post('/webdl/api/admin/disk',{wipe:1}).then(function(d){
+toast('freed '+(d.freed_mb||0)+' MB');loadAdm()})},
+'cktest':function(){$('toolOut').textContent='testing cookies… (up to 90 s)';
+post('/webdl/api/admin/cookie_test',{}).then(function(d){
+$('toolOut').textContent=d.ok?('✓ '+(d.msg||'works')):('✗ '+(d.error||'failed'))})},
+'reload':function(){post('/webdl/api/admin/reload',{}).then(function(d){
+toast(d.ok?'settings reloaded ✓':'failed')})},
+'ownpass':function(){var n=prompt('new owner password (4+ characters):');if(!n)return;
+post('/webdl/api/admin/pass',{new:n}).then(function(d){
+toast(d.ok?'owner password changed ✓':(d.error||'failed'))})},
+'unbanall':function(){if(!confirm('unban every banned account and guest?'))return;
+post('/webdl/api/admin/unban_all',{}).then(function(d){
+toast('unbanned '+(d.count||0));loadAdm()})},
+'uban':function(el){post('/webdl/api/admin/user',{user:el.dataset.name,
+banned:el.dataset.v==='1'}).then(function(){toast('updated');loadAdm()})},
+'ures':function(el){post('/webdl/api/admin/user',{user:el.dataset.name,reset_dev:1})
+.then(function(){toast('device reset');loadAdm()})},
+'udel':function(el){if(!confirm('remove '+el.dataset.name+'?'))return;
+post('/webdl/api/admin/user',{user:el.dataset.name,del:1}).then(function(){
+toast('account removed');loadAdm()})},
+'ulim':function(el){var n=el.dataset.name;
+var d=$('tabBody').querySelector('input[data-day="'+n+'"]');
+var c=$('tabBody').querySelector('input[data-cap="'+n+'"]');
+var dv=(d&&d.value||'').trim(),cv=(c&&c.value||'').trim();
+post('/webdl/api/admin/user',{user:n,daily:dv===''?null:(parseInt(dv)||0),
+cap_gb:cv===''?null:(parseFloat(cv)||0)}).then(function(){
+toast('limits updated');loadAdm()})},
+'gban':function(el){post('/webdl/api/admin/user',{dev:el.dataset.dev,
+banned:el.dataset.v==='1'}).then(function(){toast('updated');loadAdm()})},
+'gdel':function(el){if(!confirm('remove this guest device?'))return;
+post('/webdl/api/admin/user',{dev:el.dataset.dev,del:1}).then(function(){
+toast('guest removed');loadAdm()})},
+'gset':function(el){var i=$('tabBody').querySelector('input[data-glim="'+el.dataset.dev+'"]');
+var v=parseFloat(i&&i.value)||0;
+post('/webdl/api/admin/user',{dev:el.dataset.dev,limit_gb:v}).then(function(){
+toast('cap saved');loadAdm()})}};
+document.addEventListener('click',function(e){
+var el=e.target.closest?e.target.closest('[data-act]'):null;
+if(!el)return;var a=el.getAttribute('data-act');
+if(!a)return;
+if(el.tagName==='A')return;
+e.preventDefault();
+if(ACT[a]){try{ACT[a](el,e)}catch(err){toast('error: '+err.message)}}
+else toast('unknown action: '+a)},{passive:false});
+document.addEventListener('keydown',function(e){
+if(e.key!=='Enter')return;var t=e.target;
+if(t&&(t.id==='user'||t.id==='pw'))ACT['login']();
+if(t&&t.id==='invPass')ACT['invite-go']()});
+$('likeBtn')&&($('likeBtn').onclick=null);
+applyTheme(ls('webdl_theme')||'midnight');
+boot();
 })();
 </script></body></html>
