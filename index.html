@@ -168,7 +168,7 @@ style="margin-top:8px">
 <input id="invUser" placeholder="pick a username" style="margin-top:8px">
 <input id="invPass" type="password" placeholder="pick a password" style="margin-top:8px">
 <div style="margin-top:10px"><button class="btn pri wide" data-act="invite-go">Create my account</button></div>
-<div class="hint">one-time code — it makes a special account with the highest limits</div>
+<div class="hint">one-time code — it makes a special account with the highest limits.<br>username: letters, numbers, _ and - only (no dots or symbols)</div>
 </div>
 <div id="guestRow" class="hide">
 <div class="mut" style="text-align:center;margin:10px 0 4px">— or —</div>
@@ -445,6 +445,7 @@ var busy=ts.some(function(t){return ['queued','downloading','processing'].indexO
 t.pd_status==='uploading'});
 pollT=setTimeout(function(){refresh();poll()},busy?2000:7000)}
 var TABS=[['users','👤 Users'],['bans','🚫 Bans'],['guests','👥 Guests'],
+['guard','🛡 Guard'],
 ['site','🎨 Site'],['cloud','☁ Cloud'],['telegram','✈ Telegram'],
 ['invites','🎟 Invites'],['disk','📦 Disk'],['history','🕐 History'],['tools','🔧 Tools']];
 function openSettings(){go('s-settings');loadAdm()}
@@ -506,17 +507,26 @@ gb.forEach(function(u){h+='<div class="urow"><span class="dev">'+esc(String(u.de
 h+=gb.length?'':'<div class="mut">no banned guests</div>';
 h+='<div style="margin-top:11px"><button class="btn dng" data-act="unbanall">Unban everyone</button></div></div>'}
 if(T.tab==='guests'){
-h+='<div class="card"><div class="tname">Guest devices</div>';
+h+='<div class="card"><div class="tname">Guest devices</div>'+
+'<div class="hint">one guest per network · named guest 1, guest 2…</div>';
 (a.users||[]).forEach(function(u){
-if(String(u.dev||'').indexOf('u:')===0)return;
-h+='<div class="urow"><span class="dev">'+esc(String(u.dev).slice(0,16))+'…</span>'+
-'<span class="mut">'+esc(u.ip||'—')+' · '+u.n+'/day</span>'+
+var nm=u.name||('device '+String(u.dev).slice(0,10));
+h+='<div class="urow"><b>'+esc(nm)+'</b>'+
+(u.banned?'<span class="pill err">banned</span>':'<span class="pill ok">active</span>')+
+'<span class="mut">'+esc(u.net||u.ip||'—')+' · '+u.n+'/day</span>'+
+'<button class="btn sm" data-act="ginfo">ⓘ</button>'+
 '<input data-glim="'+esc(u.dev)+'" value="'+(u.limit_gb||'')+'" placeholder="cap GB">'+
 '<button class="btn sm" data-act="gset" data-dev="'+esc(u.dev)+'">set</button>'+
-(u.banned?'<span class="pill err">banned</span>':'')+
 '<button class="btn sm" data-act="gban" data-dev="'+esc(u.dev)+'" data-v="'+(u.banned?0:1)+'">'+
 (u.banned?'unban':'ban')+'</button>'+
-'<button class="btn sm dng" data-act="gdel" data-dev="'+esc(u.dev)+'">remove</button></div>'});
+'<button class="btn sm dng" data-act="gdel" data-dev="'+esc(u.dev)+'">remove</button>'+
+'<div class="ginfo hide" style="flex-basis:100%">'+
+'<div class="hrow"><div style="flex:1;min-width:110px">id: '+esc(u.dev)+'</div></div>'+
+'<div class="hrow"><div>ip: '+esc(u.ip||'—')+'</div><div>network: '+esc(u.net||'—')+'</div></div>'+
+'<div class="hrow"><div>fingerprint: '+esc(u.fp||'—')+'</div></div>'+
+'<div class="hrow"><div>agent: '+esc(u.ua||'—')+'</div></div>'+
+'<div class="hrow"><div>seen: '+(u.seen?esc(new Date(u.seen*1000).toLocaleString()):'—')+
+'</div><div>downloads: '+u.n+'</div></div></div></div>'});
 h+=(a.users||[]).length?'':'<div class="mut">no guest devices yet</div>';
 h+='</div><div class="card"><div class="tname">Networks today</div>';
 (a.ips||[]).forEach(function(x){h+='<div class="hrow"><div>'+esc(x.ip)+'</div><div class="mut">'+
@@ -565,6 +575,30 @@ h+='<div class="card"><div class="tname">✈ Telegram routing</div>'+
 'The bot must be an admin in both groups.</div>'+
 '<div style="margin-top:11px"><button class="btn pri" data-act="tgtest">Send test messages</button></div>'+
 '<div id="tgOut" class="hint"></div></div>'}
+if(T.tab==='guard'){
+h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center">'+
+'<div class="tname">🛡 Blocked signup attempts</div>'+
+'<button class="btn sm dng" data-act="attclear">Clear log</button></div>'+
+'<div class="hint">what they typed, where from, and why it was refused</div>';
+(a.attempts||[]).forEach(function(x){
+h+='<div class="urow"><b style="color:var(--err)">'+esc(x.name||'(empty)')+'</b>'+
+'<span class="pill">'+esc(x.reason||'')+'</span>'+
+'<span class="mut">'+esc(x.ip||'—')+'</span>'+
+'<span class="mut">'+esc(x.at?new Date(x.at*1000).toLocaleString():'')+'</span>'+
+'<button class="btn sm pri" data-act="allowip" data-ip="'+esc(x.ip||'')+'">allow this ip once</button>'+
+'<div class="ginfo hide" style="flex-basis:100%">'+
+'<div class="hrow"><div>network: '+esc(x.net||'—')+'</div><div>kind: '+esc(x.kind||'—')+'</div></div>'+
+'<div class="hrow"><div>agent: '+esc(x.ua||'—')+'</div></div></div></div>'});
+h+=(a.attempts||[]).length?'':'<div class="mut">nobody tried anything bad</div>';
+h+='</div><div class="card"><div class="tname">🎫 One-time IP passes</div>'+
+'<div class="hint">a pass lets that ip through ONCE (guest network rule '+
+'or too-many-attempts), then it is used up.</div>';
+(a.allows||[]).forEach(function(x){
+h+='<div class="hrow"><div>'+esc(x.ip)+'</div><div class="mut">'+
+esc(x.at?new Date(x.at*1000).toLocaleString():'')+'</div>'+
+'<button class="btn sm dng" data-act="allowdel" data-ip="'+esc(x.ip)+'">revoke</button></div>'});
+h+=(a.allows||[]).length?'':'<div class="mut">no passes waiting</div>';
+h+='</div>'}
 if(T.tab==='invites'){
 h+='<div class="card"><div class="tname">🎟 Invite codes</div>'+
 '<div style="display:flex;gap:9px;margin-top:9px;align-items:center">'+
@@ -786,6 +820,16 @@ banned:el.dataset.v==='1'}).then(function(){toast('updated');loadAdm()})},
 'gdel':function(el){if(!confirm('remove this guest device?'))return;
 post('/webdl/api/admin/user',{dev:el.dataset.dev,del:1}).then(function(){
 toast('guest removed');loadAdm()})},
+'allowip':function(el){var ip=el.dataset.ip;if(!ip)return toast('no ip on that row');
+post('/webdl/api/admin/allow',{ip:ip}).then(function(d){
+toast(d.ok?('one-time pass ready for '+ip):'failed');loadAdm()})},
+'allowdel':function(el){post('/webdl/api/admin/allow',{ip:el.dataset.ip,del:1})
+.then(function(){toast('pass revoked');loadAdm()})},
+'attclear':function(){if(!confirm('clear the attempt log?'))return;
+post('/webdl/api/admin/allow',{clear:1}).then(function(d){
+toast('cleared '+(d.cleared||0));loadAdm()})},
+'ginfo':function(el){var b=el.closest('.urow').querySelector('.ginfo');
+if(b)b.classList.toggle('hide')},
 'gset':function(el){var i=$('tabBody').querySelector('input[data-glim="'+el.dataset.dev+'"]');
 var v=parseFloat(i&&i.value)||0;
 post('/webdl/api/admin/user',{dev:el.dataset.dev,limit_gb:v}).then(function(){
