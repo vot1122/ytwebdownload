@@ -174,7 +174,20 @@ style="margin-top:8px">
 <div class="mut" style="text-align:center;margin:10px 0 4px">— or —</div>
 <button class="btn wide" data-act="guest">Continue as guest</button>
 <div class="hint" style="text-align:center">guests get smaller files and a few downloads a day</div>
+<div style="margin-top:10px"><button class="btn wide" data-act="quick">⚡ Create a quick account</button></div>
+<div class="hint" style="text-align:center">we generate a username + password for you —
+same limits as guest, but it remembers you and you can keep it</div>
 </div>
+<div id="quickBox" class="card hide" style="border-color:var(--ac)">
+<div class="tname">⚡ Your new account</div>
+<div class="hint">save these now — you can sign in with them any time</div>
+<div class="hrow" style="margin-top:8px"><div>username</div><b id="qkUser"></b></div>
+<div class="hrow"><div>password</div><b id="qkPass"></b></div>
+<div class="hrow"><div>created from</div><div class="mut" id="qkInfo"></div></div>
+<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+<button class="btn sm" data-act="qkcopy">📋 Copy both</button>
+<button class="btn pri" data-act="qkgo">Continue →</button>
+</div></div>
 </div>
 
 <div class="card">
@@ -264,6 +277,7 @@ files auto-delete after a few hours · powered by the bot's own engine<br>
 <script>
 (function(){
 var T={api:'',tok:'',role:'',user:'',meta:{},st:{},adm:{},tab:'users',theme:'midnight'};
+var QK=null;
 function $(i){return document.getElementById(i)}
 function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);
 localStorage.setItem(k,v)}catch(e){return null}}
@@ -476,7 +490,27 @@ h+='<div class="urow"><b>'+esc(u.name)+'</b>'+
 '<button class="btn sm" data-act="ures" data-name="'+esc(u.name)+'">reset device</button>'+
 '<button class="btn sm dng" data-act="udel" data-name="'+esc(u.name)+'">remove</button></div>'});
 h+=(a.accounts||[]).length?'':'<div class="mut">no accounts yet — add members via /ws</div>';
-h+='<div class="hint">cap GB + per-day are optional overrides; blank = default</div></div>';
+h+='<div class="hint">cap GB + per-day are optional overrides; blank = default</div>'+
+'<div style="margin-top:11px"><button class="btn pri" data-act="adminquick">⚡ New quick account</button>'+
+'<span class="mut" style="margin-left:9px">generated user+pass, guest limits, binds to their device</span></div></div>';
+if((a.quick||[]).length){
+h+='<div class="card"><div class="tname">⚡ Quick accounts</div>'+
+'<div class="hint">generated accounts with guest limits — adjustable like any member</div>';
+(a.quick||[]).forEach(function(q){
+h+='<div class="urow"><b>'+esc(q.name)+'</b><span class="pill">quick</span>'+
+(q.bound?'<span class="pill ok">device bound</span>':'<span class="pill warn">unbound</span>')+
+'<span class="mut">'+esc(q.ip||'—')+' · '+q.n+'/day · '+esc(q.bw)+' MB</span>'+
+'<button class="btn sm" data-act="ginfo">ⓘ</button>'+
+'<button class="btn sm" data-act="uban" data-name="'+esc(q.name)+'" data-v="'+(q.banned?0:1)+'">'+
+(q.banned?'unban':'ban')+'</button>'+
+'<button class="btn sm" data-act="ures" data-name="'+esc(q.name)+'">reset device</button>'+
+'<button class="btn sm dng" data-act="udel" data-name="'+esc(q.name)+'">remove</button>'+
+'<div class="ginfo hide" style="flex-basis:100%">'+
+'<div class="hrow"><div>bound device: '+esc(q.bound?'yes':'no')+'</div>'+
+'<div>seen: '+(q.seen?esc(new Date(q.seen*1000).toLocaleString()):'never')+'</div></div>'+
+'<div class="hrow"><div>ip: '+esc(q.ip||'—')+'</div><div>overrides: '+
+esc((q.cap_gb||'default')+' GB / '+(q.daily||'default')+' per day')+'</div></div></div></div>'});
+h+='</div>'}
 h+='<div class="card"><div class="tname">Member &amp; special limits</div><div class="grid2" style="margin-top:9px">'+
 '<div><div class="mut">member cap (GB)</div><input id="gVMax" value="'+esc(g.v_max_gb)+'"></div>'+
 '<div><div class="mut">member /day</div><input id="gVDaily" value="'+esc(g.v_daily)+'"></div>'+
@@ -689,6 +723,24 @@ post('/webdl/api/login',b).then(function(d){
 if(d.token)afterLogin(d);
 else if(d.maintenance)loginFail('maintenance mode — we will be back soon');
 else loginFail((d.why?d.why+' — ':'')+(d.error||'could not sign in'))})},
+'quick':function(){$('loginErr').textContent='';
+post('/webdl/api/quick',{fp:fp(),dev:dev()}).then(function(d){
+if(d&&d.ok){QK=d;$('qkUser').textContent=d.user;$('qkPass').textContent=d.pass;
+$('qkInfo').textContent=(d.ip||'')+(d.device?' · '+d.device.slice(0,18)+'…':'');
+$('quickBox').classList.remove('hide');$('inviteBox').classList.add('hide');
+try{if($('quickBox').scrollIntoView)$('quickBox').scrollIntoView({block:'center'})}catch(e){}}
+else if(d&&d.maintenance)loginFail('maintenance mode — we will be back soon');
+else loginFail((d&&d.error)||'could not create a quick account')})},
+'qkcopy':function(){var t='username: '+$('qkUser').textContent+
+'\npassword: '+$('qkPass').textContent;
+try{navigator.clipboard.writeText(t).then(function(){toast('copied ✓')})
+.catch(function(){toast($('qkUser').textContent+' / '+$('qkPass').textContent)})}
+catch(e){toast($('qkUser').textContent+' / '+$('qkPass').textContent)}},
+'qkgo':function(){if(QK)afterLogin(QK)},
+'adminquick':function(){post('/webdl/api/admin/quick',{}).then(function(d){
+if(d&&d.ok){alert('quick account ready\n\nusername: '+d.user+
+'\npassword: '+d.pass+'\n\n'+(d.note||''));toast('created ✓');loadAdm()}
+else toast((d&&d.error)||'failed')})},
 'guest':function(){$('loginErr').textContent='';
 post('/webdl/api/login',{guest:1,dev:dev(),fp:fp()}).then(function(d){
 if(d.token)afterLogin(d);
