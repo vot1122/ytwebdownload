@@ -404,12 +404,15 @@ renderTasks(d.tasks||[]);
 }).catch(function(){})}
 function renderTasks(tasks){
 var h='';
-tasks.forEach(function(t){h+=taskHTML(t)});
+tasks.forEach(function(t){
+if(t.status==='cancel'||t.status==='cleared')return;  // gone, not stale
+h+=taskHTML(t)});
 $('tasks').innerHTML=h||'<div class="card tight mut" style="text-align:center">'+
 'no downloads yet — paste a link above</div>'}
 function taskHTML(t){
 var st=t.status,pill='<span class="pill">'+esc(st)+'</span>';
-if(st==='done')pill='<span class="pill ok">ready</span>';
+if(st==='done'){pill='<span class="pill ok">ready</span>';
+if(t.dls)pill+=' <span class="pill ok">⬇ downloaded ×'+t.dls+'</span>'}
 if(st==='error')pill='<span class="pill err">failed</span>';
 if(st==='downloading'||st==='processing'||st==='queued')
  pill='<span class="pill live">'+esc(st)+'</span>';
@@ -454,7 +457,8 @@ var dt=x.done_at?new Date(x.done_at*1000).toLocaleString():'';
 var st=x.status==='done'?'<span class="pill ok">done</span>':
 (x.status==='cancel'?'<span class="pill">cancelled</span>':'<span class="pill err">failed</span>');
 h+='<div class="hrow"><div style="flex:1;min-width:130px">'+esc(x.title||x.url)+
-'</div><div class="mut">'+esc(x.size||'')+' · '+esc(dt)+'</div>'+st+
+'</div><div class="mut">'+esc(x.size||'')+(x.dls?' · ⬇ ×'+x.dls:'')+
+' · '+esc(dt)+'</div>'+st+
 (x.alive?' <a class="btn sm" href="'+T.api+'/webdl/dl/'+encodeURIComponent(x.id)+
 '?auth='+encodeURIComponent(T.tok)+'" download style="text-decoration:none">again</a>':'')+
 '</div>'});
@@ -685,14 +689,24 @@ function afterLogin(d){T.tok=d.token;T.role=d.role;T.user=d.user||'';
 ls('webdl_tok',d.token);ls('webdl_role',d.role);view()}
 var FMT=null;
 function startDl(audio){
-if(!FMT){$('urlErr').textContent='check the link first';return}
-var b={url:FMT.url||$('url').value.trim(),mode:audio?'audio':'video'};
+if(!FMT){$('urlErr').textContent='tap Get formats first';return}
+var cur=$('url').value.trim();
+if(FMT.url&&cur&&FMT.url!==cur){
+$('urlErr').textContent='the link changed — tap Get formats again';
+$('pick').classList.add('hide');FMT=null;return}
+var b={url:FMT.url||cur,mode:audio?'audio':'video'};
 if(!audio)b.fmt=($('custom')||{}).value||'bv*+ba/b';
 b.subs=($('subs')&&$('subs').checked)?1:0;
 b.name=audio?'':(($('fname')||{}).value||'');
 post('/webdl/api/start',b).then(function(d){
 if(d.ok){$('pick').classList.add('hide');toast('download started');refresh();poll()}
 else{$('urlErr').textContent=d.error||'could not start'}})}
+function busyStart(on){
+try{document.querySelectorAll('[data-act="start"],[data-act="start-audio"],'+
+'[data-act="fetch"],[data-act="quick-audio"]').forEach(function(b){
+b.disabled=!!on})}catch(e){}}
+$('url').addEventListener('input',function(){
+FMT=null;$('pick').classList.add('hide');$('urlErr').textContent=''});
 function doFetch(audioOnly){
 var u=$('url').value.trim();$('urlErr').textContent='';
 if(!u){$('urlErr').textContent='paste a link first';return}
@@ -702,9 +716,9 @@ if(mag){FMT={url:u};$('pick').classList.remove('hide');$('thumb').classList.add(
 $('metaTitle').textContent='Torrent';$('metaSub').textContent='magnet / torrent file';
 $('fmts').innerHTML='<div class="mut">downloads with the same engine as the bot — tap Download below</div>';
 $('custom').value='';return}
-$('urlErr').textContent='reading…';
+$('urlErr').textContent='reading…';busyStart(true);
 post('/webdl/api/formats',{url:u}).then(function(d){
-$('urlErr').textContent='';
+busyStart(false);$('urlErr').textContent='';
 if(!d.ok){$('urlErr').textContent=(d.why?d.why+' — ':'')+(d.error||'could not read that link');return}
 FMT=d;$('pick').classList.remove('hide');
 if(d.thumbnail){$('thumb').src=d.thumbnail;$('thumb').classList.remove('hide')}
@@ -776,8 +790,10 @@ var t=prompt('Paste your link:');if(t)$('url').value=t.trim()})}catch(e){}},
 'quick-audio':function(){doFetch(true)},
 'start':function(){startDl(false)},
 'start-audio':function(){startDl(true)},
-'cancel':function(el){post('/webdl/api/cancel',{id:el.dataset.id}).then(function(){
-toast('cancelling');refresh()})},
+'cancel':function(el){var card=el.closest('.task');
+if(card)card.style.opacity='.4';
+post('/webdl/api/cancel',{id:el.dataset.id}).then(function(){
+if(card)card.remove();toast('cancelled');refresh()})},
 'clear':function(el){post('/webdl/api/clear',{id:el.dataset.id}).then(function(){
 toast('removed');refresh();loadHist()})},
 'tg':function(el){post('/webdl/api/tg',{id:el.dataset.id}).then(function(){
